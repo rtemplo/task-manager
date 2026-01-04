@@ -44,6 +44,8 @@ export interface TaskFormData {
   status: TaskStatus;
 }
 
+export type ModalMode = "add" | "edit" | "sort";
+
 export type SimulatedAction =
   | { type: "ADD_TASK"; task: Task }
   | { type: "UPDATE_TASK"; taskId: string; updates: Partial<Task> }

@@ -1,0 +1,4 @@
+.newTaskModal {
+  width: clamp(450px, 50vw, 800px);
+  height: 650px;
+}

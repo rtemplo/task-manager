@@ -43,7 +43,7 @@ const taskSchema = new Schema<ITask>(
     },
     assigneeId: {
       type: String,
-      required: true,
+      required: false,
     },
     tags: {
       type: [String],

@@ -1,5 +1,7 @@
 import { createRoot } from "react-dom/client";
 import { TaskManager } from "./components/TaskManager/TaskManager";
+import { TaskFormProvider } from "./contexts/TaskFormContext";
+import { TaskManagerProvider } from "./contexts/TaskManagerContext";
 
 import "./style.css";
 
@@ -11,6 +13,10 @@ if (rootElement) {
     //     <App />
     //   </BrowserRouter>
     // </StrictMode>
-    <TaskManager />
+    <TaskManagerProvider>
+      <TaskFormProvider>
+        <TaskManager />
+      </TaskFormProvider>
+    </TaskManagerProvider>
   );
 }

@@ -1,0 +1,130 @@
+.sortModal {
+  width: 600px;
+  max-height: 450px;
+}
+
+.sortContent {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  flex: 1;
+  overflow: hidden;
+}
+
+.sortColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 0;
+}
+
+.sortColumnTitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin: 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+}
+
+.sortFieldList,
+.sortOptionList {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 0.5rem;
+  min-height: 150px;
+}
+
+.sortField,
+.sortOptionItem {
+  padding: 0.75rem;
+  background: rgba(128, 128, 128, 0.1);
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.sortField:hover,
+.sortOptionItem:hover {
+  background: rgba(128, 128, 128, 0.2);
+  border-color: rgba(128, 128, 128, 0.5);
+}
+
+.sortField.selected,
+.sortOptionItem.selected {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: #3b82f6;
+}
+
+.sortOptionItem {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.75rem;
+  align-items: center;
+  cursor: grab;
+}
+
+.sortOptionItem:active {
+  cursor: grabbing;
+}
+
+.sortOptionName {
+  font-weight: 500;
+}
+
+.sortRadioLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0 0.5rem;
+}
+
+.sortRadioLabel input[type="radio"] {
+  cursor: pointer;
+  margin: 0;
+}
+
+.addFieldsBtn,
+.removeFieldsBtn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.addFieldsBtn {
+  background: #3b82f6;
+  color: white;
+}
+
+.addFieldsBtn:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.addFieldsBtn:disabled {
+  background: rgba(128, 128, 128, 0.2);
+  color: rgba(255, 255, 255, 0.3);
+  cursor: not-allowed;
+}
+
+.removeFieldsBtn {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.removeFieldsBtn:hover {
+  background: rgba(239, 68, 68, 0.3);
+  border-color: #ef4444;
+}
