@@ -60,3 +60,27 @@ export interface SortOption {
   field: SortField;
   direction: SortDirection;
 }
+
+export interface ColumnSortConfig {
+  todo: SortOption[];
+  "in-progress": SortOption[];
+  done: SortOption[];
+}
+
+export interface AppState {
+  userId: string;
+  tasks: {
+    customSort: {
+      useCustomSort: boolean;
+      toDoListSeq: string[];
+      inProgListSeq: string[];
+      completedListSeq: string[];
+    };
+    sort: {
+      applyToAllColumns: boolean;
+      columnConfigs: ColumnSortConfig;
+    };
+  };
+  createdAt: string;
+  updatedAt: string;
+}

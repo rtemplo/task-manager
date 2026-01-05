@@ -2,6 +2,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express, { type Request, type Response } from "express";
 import mongoose from "mongoose";
+import appStateRoutes from "./routes/appState.js";
 import taskRoutes from "./routes/tasks.js";
 import userRoutes from "./routes/users.js";
 
@@ -18,6 +19,7 @@ app.use(express.json());
 // Routes
 app.use("/api/tasks", taskRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/app-state", appStateRoutes);
 
 // Health check
 app.get("/api/health", (_req: Request, res: Response) => {

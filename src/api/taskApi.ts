@@ -1,4 +1,4 @@
-import type { Task, TaskFormData, TaskStatus, User } from "../common/types";
+import type { AppState, ColumnSortConfig, Task, TaskFormData, TaskStatus, User } from "../common/types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api";
 
@@ -83,6 +83,57 @@ export const userApi = {
   async getById(id: string): Promise<User> {
     const response = await fetch(`${API_BASE_URL}/users/${id}`);
     return handleResponse<User>(response);
+  },
+};
+
+// AppState API
+export const appStateApi = {
+  async get(userId: string): Promise<AppState> {
+    const response = await fetch(`${API_BASE_URL}/app-state/${userId}`);
+    return handleResponse<AppState>(response);
+  },
+
+  async updateCustomSort(
+    userId: string,
+    customSort: {
+      useCustomSort: boolean;
+      toDoListSeq: string[];
+      inProgListSeq: string[];
+      completedListSeq: string[];
+    }
+  ): Promise<AppState> {
+    const response = await fetch(`${API_BASE_URL}/app-state/${userId}/custom-sort`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(customSort),
+    });
+    return handleResponse<AppState>(response);
+  },
+
+  async updateSortConfig(
+    userId: string,
+    sortConfig: {
+      applyToAllColumns: boolean;
+      columnConfigs: ColumnSortConfig;
+    }
+  ): Promise<AppState> {
+    const response = await fetch(`${API_BASE_URL}/app-state/${userId}/sort-config`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(sortConfig),
+    });
+    return handleResponse<AppState>(response);
+  },
+
+  async reset(userId: string): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/app-state/${userId}`, {
+      method: "DELETE",
+    });
+    await handleResponse(response);
   },
 };
 
