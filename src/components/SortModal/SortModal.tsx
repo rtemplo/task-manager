@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import type { SortField, SortOption } from "../../common/types";
+import type { SortField, SortOption, TaskStatus } from "../../common/types";
 import { useTaskManagerContext } from "../../contexts/TaskManagerContext";
 import styles from "./SortModal.module.css";
 
 export const SortModal: React.FC = () => {
-  const { setModalMode } = useTaskManagerContext();
+  const { setModalMode, appState, setAppState } = useTaskManagerContext();
   const [draggedSortIndex, setDraggedSortIndex] = useState<number | null>(null);
+  const [selectedColumns, setSelectedColumns] = useState<TaskStatus[]>(["todo", "in-progress", "done"]);
 
   // Sort state
   const [sortOptions, setSortOptions] = useState<SortOption[]>([
@@ -98,6 +99,54 @@ export const SortModal: React.FC = () => {
     setModalMode(null);
   }, [setModalMode]);
 
+  // Load sort configuration from appState
+  useEffect(() => {
+    if (!appState) return;
+
+    const { columnConfigs } = appState.tasks.sort;
+    const firstColumn = selectedColumns[0] || "todo";
+
+    // Load sort options for the first selected column
+    const columnConfig = columnConfigs[firstColumn];
+    if (columnConfig && columnConfig.length > 0) {
+      setSortOptions(columnConfig);
+
+      // Update available fields based on what's already in use
+      const usedFields = columnConfig.map((opt) => opt.field);
+      const allFields: SortField[] = ["dueDate", "priority", "assignee"];
+      setAvailableSortFields(allFields.filter((f) => !usedFields.includes(f)));
+    } else {
+      // Default configuration
+      setSortOptions([{ field: "dueDate", direction: "ascending" }]);
+      setAvailableSortFields(["priority", "assignee"]);
+    }
+  }, [appState, selectedColumns]);
+
+  // Save sort configuration to appState
+  const saveSortConfig = useCallback(async () => {
+    if (!appState) return;
+
+    try {
+      const { appStateApi } = await import("../../api/taskApi");
+      const USER_ID = "default-user"; // TODO: Replace with actual user auth
+
+      // Build column configs - apply sortOptions to all selected columns
+      const columnConfigs = { ...appState.tasks.sort.columnConfigs };
+      for (const column of selectedColumns) {
+        columnConfigs[column] = sortOptions;
+      }
+
+      const updatedAppState = await appStateApi.updateSortConfig(USER_ID, {
+        columnConfigs,
+      });
+
+      setAppState(updatedAppState);
+      closeSortModal();
+    } catch (err) {
+      console.error("Error saving sort config:", err);
+    }
+  }, [appState, selectedColumns, sortOptions, setAppState, closeSortModal]);
+
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -125,6 +174,53 @@ export const SortModal: React.FC = () => {
           >
             ×
           </button>
+        </div>
+        <div className={styles.sortControls}>
+          <div className={styles.columnCheckboxes}>
+            <span className={styles.columnCheckboxLabel}>Apply to:</span>
+            <label className={styles.columnCheckbox}>
+              <input
+                type="checkbox"
+                checked={selectedColumns.includes("todo")}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setSelectedColumns([...selectedColumns, "todo"]);
+                  } else {
+                    setSelectedColumns(selectedColumns.filter((c) => c !== "todo"));
+                  }
+                }}
+              />
+              To Do
+            </label>
+            <label className={styles.columnCheckbox}>
+              <input
+                type="checkbox"
+                checked={selectedColumns.includes("in-progress")}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setSelectedColumns([...selectedColumns, "in-progress"]);
+                  } else {
+                    setSelectedColumns(selectedColumns.filter((c) => c !== "in-progress"));
+                  }
+                }}
+              />
+              In Progress
+            </label>
+            <label className={styles.columnCheckbox}>
+              <input
+                type="checkbox"
+                checked={selectedColumns.includes("done")}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setSelectedColumns([...selectedColumns, "done"]);
+                  } else {
+                    setSelectedColumns(selectedColumns.filter((c) => c !== "done"));
+                  }
+                }}
+              />
+              Done
+            </label>
+          </div>
         </div>
         <div className={styles.sortContent}>
           <div className={styles.sortColumn}>
@@ -209,8 +305,8 @@ export const SortModal: React.FC = () => {
           </div>
         </div>
         <div className="footer">
-          <button type="button" className={`${styles.actionBtn} ${styles.saveBtn}`} onClick={closeSortModal}>
-            Done
+          <button type="button" className={`${styles.actionBtn} ${styles.saveBtn}`} onClick={saveSortConfig}>
+            Apply
           </button>
         </div>
       </div>

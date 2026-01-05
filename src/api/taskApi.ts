@@ -115,7 +115,6 @@ export const appStateApi = {
   async updateSortConfig(
     userId: string,
     sortConfig: {
-      applyToAllColumns: boolean;
       columnConfigs: ColumnSortConfig;
     }
   ): Promise<AppState> {

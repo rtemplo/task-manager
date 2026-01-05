@@ -1,6 +1,54 @@
 .sortModal {
   width: 600px;
-  max-height: 450px;
+  min-height: 533px;
+  max-height: 650px;
+}
+
+.sortControls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+  gap: 1rem;
+}
+
+.columnCheckboxes {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.columnCheckboxLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-right: 0.5rem;
+}
+
+.columnCheckbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  user-select: none;
+  padding: 0.375rem 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(128, 128, 128, 0.2);
+  border-radius: 0.375rem;
+  transition: all 0.2s;
+}
+
+.columnCheckbox:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(128, 128, 128, 0.3);
+}
+
+.columnCheckbox input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
 }
 
 .sortContent {

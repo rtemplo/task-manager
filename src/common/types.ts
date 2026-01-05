@@ -77,7 +77,6 @@ export interface AppState {
       completedListSeq: string[];
     };
     sort: {
-      applyToAllColumns: boolean;
       columnConfigs: ColumnSortConfig;
     };
   };

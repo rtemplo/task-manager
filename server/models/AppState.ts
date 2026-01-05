@@ -71,10 +71,6 @@ const appStateSchema = new Schema<IAppState>(
         },
       },
       sort: {
-        applyToAllColumns: {
-          type: Boolean,
-          default: false,
-        },
         columnConfigs: {
           todo: {
             type: [sortOptionSchema],

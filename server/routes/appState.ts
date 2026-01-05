@@ -20,7 +20,6 @@ router.get("/:userId", async (req: Request, res: Response) => {
             completedListSeq: [],
           },
           sort: {
-            applyToAllColumns: false,
             columnConfigs: {
               todo: [],
               "in-progress": [],
@@ -75,13 +74,12 @@ router.put("/:userId/custom-sort", async (req: Request, res: Response) => {
 // PUT update sort configuration
 router.put("/:userId/sort-config", async (req: Request, res: Response) => {
   try {
-    const { applyToAllColumns, columnConfigs } = req.body;
+    const { columnConfigs } = req.body;
 
     const appState = await AppState.findOneAndUpdate(
       { userId: req.params.userId },
       {
         $set: {
-          "tasks.sort.applyToAllColumns": applyToAllColumns,
           "tasks.sort.columnConfigs": columnConfigs,
         },
       },
