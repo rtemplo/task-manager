@@ -59,11 +59,24 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
           return [...otherTasks, ...reorderedColumnTasks];
         });
       } else {
-        // Moving to a different column - update status and position
+        // Moving to a different column - update status and insert at drop position
         const updateTaskStatus = async () => {
           try {
             const updatedTask = await taskApi.updateStatus(draggedTaskId, targetStatus);
-            setTasks((prevTasks) => prevTasks.map((t) => (t.id === draggedTaskId ? updatedTask : t)));
+            setTasks((prevTasks) => {
+              // Remove the dragged task from all tasks
+              const tasksWithoutDragged = prevTasks.filter((t) => t.id !== draggedTaskId);
+
+              // Get tasks in the target column
+              const targetColumnTasks = tasksWithoutDragged.filter((t) => t.status === targetStatus);
+
+              // Insert the updated task at the drop position
+              targetColumnTasks.splice(targetIndex, 0, updatedTask);
+
+              // Merge with tasks from other columns
+              const otherColumnTasks = tasksWithoutDragged.filter((t) => t.status !== targetStatus);
+              return [...otherColumnTasks, ...targetColumnTasks];
+            });
           } catch (err) {
             console.error("Error updating task status:", err);
             setError(err instanceof Error ? err.message : "Failed to update task");
