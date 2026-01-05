@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { appStateApi } from "../../api/taskApi";
 import type { SortField, SortOption, TaskStatus } from "../../common/types";
 import { useTaskManagerContext } from "../../contexts/TaskManagerContext";
 import styles from "./SortModal.module.css";
@@ -99,7 +100,8 @@ export const SortModal: React.FC = () => {
     setModalMode(null);
   }, [setModalMode]);
 
-  // Load sort configuration from appState
+  // Load sort configuration from appState on mount only
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Only load initial config on mount, not when columns change
   useEffect(() => {
     if (!appState) return;
 
@@ -120,23 +122,25 @@ export const SortModal: React.FC = () => {
       setSortOptions([{ field: "dueDate", direction: "ascending" }]);
       setAvailableSortFields(["priority", "assignee"]);
     }
-  }, [appState, selectedColumns]);
+  }, [appState]);
 
   // Save sort configuration to appState
   const saveSortConfig = useCallback(async () => {
     if (!appState) return;
 
     try {
-      const { appStateApi } = await import("../../api/taskApi");
       const USER_ID = "default-user"; // TODO: Replace with actual user auth
 
-      // Build column configs - apply sortOptions to all selected columns
+      // Build column configs
+      // - Selected columns get the current sortOptions
+      // - Unselected columns preserve their existing configuration
       const columnConfigs = { ...appState.tasks.sort.columnConfigs };
+
       for (const column of selectedColumns) {
         columnConfigs[column] = sortOptions;
       }
 
-      // Reset custom sort for selected columns
+      // Reset custom sort for selected columns only
       const customSort = {
         useCustomSort: false,
         toDoListSeq: selectedColumns.includes("todo") ? [] : appState.tasks.customSort.toDoListSeq,
