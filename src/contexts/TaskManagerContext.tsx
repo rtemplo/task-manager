@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 import { appStateApi, taskApi, userApi } from "../api/taskApi";
-import type { AppState, ModalMode, Task, TaskStatus, User } from "../common/types";
+import type { AppState, ModalMode, SortOption, Task, TaskStatus, User } from "../common/types";
 
 const USER_ID = "default-user"; // TODO: Replace with actual user auth
 
@@ -90,17 +90,63 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const filteredTasks = useMemo(() => {
     // Implement filter logic here (search, assignee, priority, tags, due date)
-    // TODO: Apply sorting based on sortOptions state
+    // TODO: Apply filtering based on filter state
     return tasks;
   }, [tasks]);
 
-  // Group tasks by status and apply custom sort if enabled
+  // Sort tasks based on SortOption configuration
+  const sortTasks = useCallback(
+    (tasksToSort: Task[], sortOptions: SortOption[], usersMap: Map<string, User>): Task[] => {
+      if (!sortOptions || sortOptions.length === 0) {
+        return tasksToSort;
+      }
+
+      const sorted = [...tasksToSort];
+
+      sorted.sort((a, b) => {
+        for (const option of sortOptions) {
+          let comparison = 0;
+
+          switch (option.field) {
+            case "dueDate":
+              comparison = new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+              break;
+            case "priority": {
+              const priorityOrder = { high: 3, medium: 2, low: 1 };
+              comparison = priorityOrder[a.priority] - priorityOrder[b.priority];
+              break;
+            }
+            case "assignee": {
+              const assigneeA = usersMap.get(a.assigneeId)?.name || "";
+              const assigneeB = usersMap.get(b.assigneeId)?.name || "";
+              comparison = assigneeA.localeCompare(assigneeB);
+              break;
+            }
+          }
+
+          if (comparison !== 0) {
+            return option.direction === "ascending" ? comparison : -comparison;
+          }
+        }
+
+        return 0;
+      });
+
+      return sorted;
+    },
+    []
+  );
+
+  // Group tasks by status and apply sorting
   const tasksByStatus = useMemo(() => {
     const grouped = {
       todo: filteredTasks.filter((task) => task.status === "todo"),
       "in-progress": filteredTasks.filter((task) => task.status === "in-progress"),
       done: filteredTasks.filter((task) => task.status === "done"),
     };
+
+    // Create users map for efficient lookup
+    const usersMap = new Map(users.map((u) => [u.id, u]));
 
     // Apply custom sort if enabled and sequences exist
     if (appState?.tasks.customSort.useCustomSort) {
@@ -126,10 +172,25 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .map((id) => grouped.done.find((task) => task.id === id))
           .filter((task): task is Task => task !== undefined);
       }
+    } else if (appState?.tasks.sort.columnConfigs) {
+      // Apply sort configuration from SortModal
+      const { columnConfigs } = appState.tasks.sort;
+
+      if (columnConfigs.todo && columnConfigs.todo.length > 0) {
+        grouped.todo = sortTasks(grouped.todo, columnConfigs.todo, usersMap);
+      }
+
+      if (columnConfigs["in-progress"] && columnConfigs["in-progress"].length > 0) {
+        grouped["in-progress"] = sortTasks(grouped["in-progress"], columnConfigs["in-progress"], usersMap);
+      }
+
+      if (columnConfigs.done && columnConfigs.done.length > 0) {
+        grouped.done = sortTasks(grouped.done, columnConfigs.done, usersMap);
+      }
     }
 
     return grouped;
-  }, [filteredTasks, appState]);
+  }, [filteredTasks, appState, users, sortTasks]);
 
   // Load initial data
   useEffect(() => {
