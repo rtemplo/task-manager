@@ -7,19 +7,20 @@ import { useTaskForm } from "../../contexts/TaskFormContext";
 import { useTaskManagerContext } from "../../contexts/TaskManagerContext";
 import styles from "./TaskCard.module.css";
 
-export const TaskCard: React.FC<{ task: Task }> = ({ task }) => {
-  const { users, tasks, setDraggedTaskId, setModalMode, setTasks, setError } = useTaskManagerContext();
+interface TaskCardProps {
+  task: Task;
+  index: number;
+  onDragStart: (taskId: string) => void;
+  onDragOver: (e: React.DragEvent) => void;
+  onDragEnd: () => void;
+}
+
+export const TaskCard: React.FC<TaskCardProps> = ({ task, index, onDragStart, onDragOver, onDragEnd }) => {
+  const { users, tasks, setModalMode, setTasks, setError } = useTaskManagerContext();
   const { setTaskFormData } = useTaskForm();
 
   const user = users.find((user) => user.id === task.assigneeId);
   const overdue = task.dueDate < new Date().toISOString() && task.status !== "done";
-
-  const handleDragStart = useCallback(
-    (taskId: string) => {
-      setDraggedTaskId(taskId);
-    },
-    [setDraggedTaskId]
-  );
 
   const editTask = useCallback(
     (taskId: string) => {
@@ -68,7 +69,9 @@ export const TaskCard: React.FC<{ task: Task }> = ({ task }) => {
       key={task.id}
       className={`${styles.taskCard} ${styles[`priority-${task.priority}`]} ${overdue ? styles.overdue : ""}`}
       draggable
-      onDragStart={() => handleDragStart(task.id)}
+      onDragStart={() => onDragStart(task.id)}
+      onDragOver={onDragOver}
+      onDragEnd={onDragEnd}
       role="button"
       tabIndex={0}
     >
