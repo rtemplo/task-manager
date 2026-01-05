@@ -10,17 +10,74 @@ import styles from "./TaskCard.module.css";
 interface TaskCardProps {
   task: Task;
   index: number;
-  onDragStart: (taskId: string) => void;
-  onDragOver: (e: React.DragEvent) => void;
-  onDragEnd: () => void;
 }
 
-export const TaskCard: React.FC<TaskCardProps> = ({ task, index, onDragStart, onDragOver, onDragEnd }) => {
-  const { users, tasks, setModalMode, setTasks, setError } = useTaskManagerContext();
+export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
+  const { users, tasks, draggedTaskId, setModalMode, setTasks, setError, setDraggedTaskId } =
+    useTaskManagerContext();
   const { setTaskFormData } = useTaskForm();
 
   const user = users.find((user) => user.id === task.assigneeId);
   const overdue = task.dueDate < new Date().toISOString() && task.status !== "done";
+
+  const handleDragStart = useCallback(() => {
+    setDraggedTaskId(task.id);
+  }, [task.id, setDraggedTaskId]);
+
+  const handleDragOver = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (!draggedTaskId) return;
+
+      // Find the dragged task to get its current status
+      const draggedTask = tasks.find((t) => t.id === draggedTaskId);
+      if (!draggedTask) return;
+
+      const sourceStatus = draggedTask.status;
+      const targetStatus = task.status;
+      const targetIndex = index;
+
+      // If dragging within the same column
+      if (sourceStatus === targetStatus) {
+        const statusTasks = tasks.filter((t) => t.status === sourceStatus);
+        const sourceIndex = statusTasks.findIndex((t) => t.id === draggedTaskId);
+
+        if (sourceIndex === targetIndex) return;
+
+        // Reorder tasks within the same column
+        setTasks((prevTasks) => {
+          const columnTasks = prevTasks.filter((t) => t.status === sourceStatus);
+          const draggedItem = columnTasks[sourceIndex];
+
+          const reorderedColumnTasks = [...columnTasks];
+          reorderedColumnTasks.splice(sourceIndex, 1);
+          reorderedColumnTasks.splice(targetIndex, 0, draggedItem);
+
+          const otherTasks = prevTasks.filter((t) => t.status !== sourceStatus);
+          return [...otherTasks, ...reorderedColumnTasks];
+        });
+      } else {
+        // Moving to a different column - update status and position
+        const updateTaskStatus = async () => {
+          try {
+            const updatedTask = await taskApi.updateStatus(draggedTaskId, targetStatus);
+            setTasks((prevTasks) => prevTasks.map((t) => (t.id === draggedTaskId ? updatedTask : t)));
+          } catch (err) {
+            console.error("Error updating task status:", err);
+            setError(err instanceof Error ? err.message : "Failed to update task");
+          }
+        };
+        updateTaskStatus();
+      }
+    },
+    [draggedTaskId, tasks, task.status, index, setTasks, setError]
+  );
+
+  const handleDragEnd = useCallback(() => {
+    setDraggedTaskId(null);
+  }, [setDraggedTaskId]);
 
   const editTask = useCallback(
     (taskId: string) => {
@@ -69,9 +126,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index, onDragStart, on
       key={task.id}
       className={`${styles.taskCard} ${styles[`priority-${task.priority}`]} ${overdue ? styles.overdue : ""}`}
       draggable
-      onDragStart={() => onDragStart(task.id)}
-      onDragOver={onDragOver}
-      onDragEnd={onDragEnd}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragEnd={handleDragEnd}
       role="button"
       tabIndex={0}
     >
