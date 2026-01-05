@@ -13,7 +13,7 @@ interface TaskCardProps {
 }
 
 export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
-  const { users, tasks, draggedTaskId, setModalMode, setTasks, setError, setDraggedTaskId } =
+  const { users, tasks, draggedTaskId, setModalMode, setTasks, setError, setDraggedTaskId, saveCustomSort } =
     useTaskManagerContext();
   const { setTaskFormData } = useTaskForm();
 
@@ -89,8 +89,17 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
   );
 
   const handleDragEnd = useCallback(() => {
+    // Save custom sort for the affected column(s)
+    if (draggedTaskId) {
+      const draggedTask = tasks.find((t) => t.id === draggedTaskId);
+      if (draggedTask) {
+        const statusTasks = tasks.filter((t) => t.status === draggedTask.status);
+        const taskIds = statusTasks.map((t) => t.id);
+        saveCustomSort(draggedTask.status, taskIds);
+      }
+    }
     setDraggedTaskId(null);
-  }, [setDraggedTaskId]);
+  }, [draggedTaskId, tasks, saveCustomSort, setDraggedTaskId]);
 
   const editTask = useCallback(
     (taskId: string) => {
