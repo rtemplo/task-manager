@@ -149,11 +149,13 @@ export const SortModal: React.FC = () => {
       };
 
       // Save both sort config and reset custom sort
-      const [updatedAppState] = await Promise.all([
+      await Promise.all([
         appStateApi.updateSortConfig(USER_ID, { columnConfigs }),
         appStateApi.updateCustomSort(USER_ID, customSort),
       ]);
 
+      // Fetch the complete updated appState
+      const updatedAppState = await appStateApi.get(USER_ID);
       setAppState(updatedAppState);
       closeSortModal();
     } catch (err) {
