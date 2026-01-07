@@ -70,12 +70,6 @@ export interface ColumnSortConfig {
 export interface AppState {
   userId: string;
   tasks: {
-    customSort: {
-      useCustomSort: boolean;
-      toDoListSeq: string[];
-      inProgListSeq: string[];
-      completedListSeq: string[];
-    };
     sort: {
       columnConfigs: ColumnSortConfig;
     };

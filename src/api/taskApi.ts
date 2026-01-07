@@ -93,25 +93,6 @@ export const appStateApi = {
     return handleResponse<AppState>(response);
   },
 
-  async updateCustomSort(
-    userId: string,
-    customSort: {
-      useCustomSort: boolean;
-      toDoListSeq: string[];
-      inProgListSeq: string[];
-      completedListSeq: string[];
-    }
-  ): Promise<AppState> {
-    const response = await fetch(`${API_BASE_URL}/app-state/${userId}/custom-sort`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(customSort),
-    });
-    return handleResponse<AppState>(response);
-  },
-
   async updateSortConfig(
     userId: string,
     sortConfig: {

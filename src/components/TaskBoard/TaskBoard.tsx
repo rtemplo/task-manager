@@ -6,8 +6,7 @@ import { TaskCard } from "../TaskCard/TaskCard";
 import styles from "./TaskBoard.module.css";
 
 export const TaskBoard: React.FC = () => {
-  const { tasksByStatus, appState, draggedTaskId, tasks, setTasks, setError, saveCustomSort } =
-    useTaskManagerContext();
+  const { tasksByStatus, appState, draggedTaskId, tasks, setTasks, setError } = useTaskManagerContext();
 
   // Handle drag over empty column or empty space in column
   const handleColumnDragOver = useCallback(
@@ -22,19 +21,13 @@ export const TaskBoard: React.FC = () => {
 
       const sourceStatus = draggedTask.status;
 
-      // Only handle cross-column moves (same-column handled by TaskCard)
+      // Only handle cross-column moves
       if (sourceStatus === targetStatus) return;
 
-      // Move task to the end of the target column
-      setTasks((prevTasks) => {
-        const tasksWithoutDragged = prevTasks.filter((t) => t.id !== draggedTaskId);
-        const targetColumnTasks = tasksWithoutDragged.filter((t) => t.status === targetStatus);
-        const otherColumnTasks = tasksWithoutDragged.filter((t) => t.status !== targetStatus);
-
-        // Add dragged task to end of target column with updated status
-        const updatedTask = { ...draggedTask, status: targetStatus };
-        return [...otherColumnTasks, ...targetColumnTasks, updatedTask];
-      });
+      // Optimistically update UI - move task to the target column
+      setTasks((prevTasks) =>
+        prevTasks.map((t) => (t.id === draggedTaskId ? { ...t, status: targetStatus } : t))
+      );
     },
     [draggedTaskId, tasks, setTasks]
   );
@@ -49,19 +42,12 @@ export const TaskBoard: React.FC = () => {
       try {
         // Update task status in backend
         await taskApi.updateStatus(draggedTaskId, targetStatus);
-
-        // Save custom sort for the target column
-        const targetColumnTasks = tasks
-          .filter((t) => t.status === targetStatus || t.id === draggedTaskId)
-          .map((t) => (t.id === draggedTaskId ? { ...t, status: targetStatus } : t));
-        const taskIds = targetColumnTasks.map((t) => t.id);
-        saveCustomSort(targetStatus, taskIds);
       } catch (err) {
         console.error("Error updating task status:", err);
         setError(err instanceof Error ? err.message : "Failed to update task");
       }
     },
-    [draggedTaskId, tasks, saveCustomSort, setError]
+    [draggedTaskId, setError]
   );
 
   // Get sort indicator text for a column
@@ -69,20 +55,7 @@ export const TaskBoard: React.FC = () => {
     return (status: TaskStatus): string | null => {
       if (!appState) return null;
 
-      // Check if custom sort is enabled
-      if (appState.tasks.customSort.useCustomSort) {
-        const sequences = {
-          todo: appState.tasks.customSort.toDoListSeq,
-          "in-progress": appState.tasks.customSort.inProgListSeq,
-          done: appState.tasks.customSort.completedListSeq,
-        };
-
-        if (sequences[status].length > 0) {
-          return "Custom Order";
-        }
-      }
-
-      // Check for configured sort
+      // Check for configured sort from sort modal
       const sortConfig = appState.tasks.sort.columnConfigs[status];
       if (sortConfig && sortConfig.length > 0) {
         const sortParts = sortConfig.map((opt) => {

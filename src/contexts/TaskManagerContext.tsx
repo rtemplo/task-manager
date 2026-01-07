@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 import { appStateApi, taskApi, userApi } from "../api/taskApi";
-import type { AppState, ModalMode, SortOption, Task, TaskStatus, User } from "../common/types";
+import type { AppState, ModalMode, SortOption, Task, User } from "../common/types";
 
 const USER_ID = "default-user"; // TODO: Replace with actual user auth
 
@@ -30,7 +30,6 @@ interface ITaskContext {
   setModalMode: Dispatch<SetStateAction<ModalMode | null>>;
   setDraggedTaskId: Dispatch<SetStateAction<string | null>>;
   setAppState: Dispatch<SetStateAction<AppState | null>>;
-  saveCustomSort: (columnStatus: TaskStatus, taskIds: string[]) => Promise<void>;
 }
 
 const TaskManagerContext = createContext<ITaskContext>({
@@ -50,7 +49,6 @@ const TaskManagerContext = createContext<ITaskContext>({
   setModalMode: () => {},
   setDraggedTaskId: () => {},
   setAppState: () => {},
-  saveCustomSort: async () => {},
 });
 
 const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -61,32 +59,6 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [modalMode, setModalMode] = useState<ModalMode | null>(null);
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [appState, setAppState] = useState<AppState | null>(null);
-
-  // Helper to check if sequence matches default order
-  const sequenceMatchesDefault = useCallback((sequence: string[], defaultTasks: Task[]): boolean => {
-    if (sequence.length !== defaultTasks.length) return false;
-    return sequence.every((id, index) => id === defaultTasks[index].id);
-  }, []);
-
-  // Save custom sort to backend
-  const saveCustomSort = async (columnStatus: TaskStatus, taskIds: string[]) => {
-    if (!appState) return;
-
-    try {
-      const customSort = {
-        useCustomSort: true,
-        toDoListSeq: columnStatus === "todo" ? taskIds : appState.tasks.customSort.toDoListSeq,
-        inProgListSeq: columnStatus === "in-progress" ? taskIds : appState.tasks.customSort.inProgListSeq,
-        completedListSeq: columnStatus === "done" ? taskIds : appState.tasks.customSort.completedListSeq,
-      };
-
-      const updatedAppState = await appStateApi.updateCustomSort(USER_ID, customSort);
-      setAppState(updatedAppState);
-    } catch (err) {
-      console.error("Error saving custom sort:", err);
-      setError(err instanceof Error ? err.message : "Failed to save custom sort");
-    }
-  };
 
   const filteredTasks = useMemo(() => {
     // Implement filter logic here (search, assignee, priority, tags, due date)
@@ -148,32 +120,8 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Create users map for efficient lookup
     const usersMap = new Map(users.map((u) => [u.id, u]));
 
-    // Apply custom sort if enabled and sequences exist
-    if (appState?.tasks.customSort.useCustomSort) {
-      const { toDoListSeq, inProgListSeq, completedListSeq } = appState.tasks.customSort;
-
-      // Sort todo column
-      if (toDoListSeq.length > 0) {
-        grouped.todo = toDoListSeq
-          .map((id) => grouped.todo.find((task) => task.id === id))
-          .filter((task): task is Task => task !== undefined);
-      }
-
-      // Sort in-progress column
-      if (inProgListSeq.length > 0) {
-        grouped["in-progress"] = inProgListSeq
-          .map((id) => grouped["in-progress"].find((task) => task.id === id))
-          .filter((task): task is Task => task !== undefined);
-      }
-
-      // Sort done column
-      if (completedListSeq.length > 0) {
-        grouped.done = completedListSeq
-          .map((id) => grouped.done.find((task) => task.id === id))
-          .filter((task): task is Task => task !== undefined);
-      }
-    } else if (appState?.tasks.sort.columnConfigs) {
-      // Apply sort configuration from SortModal
+    // Apply sort configuration from SortModal
+    if (appState?.tasks.sort.columnConfigs) {
       const { columnConfigs } = appState.tasks.sort;
 
       if (columnConfigs.todo && columnConfigs.todo.length > 0) {
@@ -205,48 +153,7 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
         ]);
         setTasks(tasksData);
         setUsers(usersData);
-
-        // Clean orphaned IDs from sequences
-        if (appStateData.tasks.customSort.useCustomSort) {
-          const taskIds = new Set(tasksData.map((t) => t.id));
-          const todoTasks = tasksData.filter((t) => t.status === "todo");
-          const inProgTasks = tasksData.filter((t) => t.status === "in-progress");
-          const doneTasks = tasksData.filter((t) => t.status === "done");
-
-          const cleanToDoSeq = appStateData.tasks.customSort.toDoListSeq.filter((id) => taskIds.has(id));
-          const cleanInProgSeq = appStateData.tasks.customSort.inProgListSeq.filter((id) => taskIds.has(id));
-          const cleanCompletedSeq = appStateData.tasks.customSort.completedListSeq.filter((id) =>
-            taskIds.has(id)
-          );
-
-          const hasOrphans =
-            cleanToDoSeq.length !== appStateData.tasks.customSort.toDoListSeq.length ||
-            cleanInProgSeq.length !== appStateData.tasks.customSort.inProgListSeq.length ||
-            cleanCompletedSeq.length !== appStateData.tasks.customSort.completedListSeq.length;
-
-          // Check if cleaned sequences match default order
-          const todoMatchesDefault = sequenceMatchesDefault(cleanToDoSeq, todoTasks);
-          const inProgMatchesDefault = sequenceMatchesDefault(cleanInProgSeq, inProgTasks);
-          const doneMatchesDefault = sequenceMatchesDefault(cleanCompletedSeq, doneTasks);
-          const allMatchDefault = todoMatchesDefault && inProgMatchesDefault && doneMatchesDefault;
-
-          if (hasOrphans || allMatchDefault) {
-            // Update or reset sequences
-            const updatedCustomSort = {
-              useCustomSort: !allMatchDefault,
-              toDoListSeq: allMatchDefault ? [] : cleanToDoSeq,
-              inProgListSeq: allMatchDefault ? [] : cleanInProgSeq,
-              completedListSeq: allMatchDefault ? [] : cleanCompletedSeq,
-            };
-
-            const updatedAppState = await appStateApi.updateCustomSort(USER_ID, updatedCustomSort);
-            setAppState(updatedAppState);
-          } else {
-            setAppState(appStateData);
-          }
-        } else {
-          setAppState(appStateData);
-        }
+        setAppState(appStateData);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load data");
         console.error("Error loading data:", err);
@@ -256,7 +163,7 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     loadData();
-  }, [sequenceMatchesDefault]);
+  }, []);
 
   return (
     <TaskManagerContext.Provider
@@ -277,7 +184,6 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setModalMode,
         setDraggedTaskId,
         setAppState,
-        saveCustomSort,
       }}
     >
       {children}

@@ -14,11 +14,6 @@ export interface IColumnSortConfig {
 export interface IAppState extends Document {
   userId: string;
   tasks: {
-    customSort: {
-      toDoListSeq: string[];
-      inProgListSeq: string[];
-      completedListSeq: string[];
-    };
     sort: {
       applyToAllColumns: boolean;
       columnConfigs: IColumnSortConfig;
@@ -52,24 +47,6 @@ const appStateSchema = new Schema<IAppState>(
       unique: true,
     },
     tasks: {
-      customSort: {
-        useCustomSort: {
-          type: Boolean,
-          default: false,
-        },
-        toDoListSeq: {
-          type: [String],
-          default: [],
-        },
-        inProgListSeq: {
-          type: [String],
-          default: [],
-        },
-        completedListSeq: {
-          type: [String],
-          default: [],
-        },
-      },
       sort: {
         columnConfigs: {
           todo: {

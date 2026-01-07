@@ -140,19 +140,8 @@ export const SortModal: React.FC = () => {
         columnConfigs[column] = sortOptions;
       }
 
-      // Reset custom sort for selected columns only
-      const customSort = {
-        useCustomSort: false,
-        toDoListSeq: selectedColumns.includes("todo") ? [] : appState.tasks.customSort.toDoListSeq,
-        inProgListSeq: selectedColumns.includes("in-progress") ? [] : appState.tasks.customSort.inProgListSeq,
-        completedListSeq: selectedColumns.includes("done") ? [] : appState.tasks.customSort.completedListSeq,
-      };
-
-      // Save both sort config and reset custom sort
-      await Promise.all([
-        appStateApi.updateSortConfig(USER_ID, { columnConfigs }),
-        appStateApi.updateCustomSort(USER_ID, customSort),
-      ]);
+      // Save sort configuration
+      await appStateApi.updateSortConfig(USER_ID, { columnConfigs });
 
       // Fetch the complete updated appState
       const updatedAppState = await appStateApi.get(USER_ID);

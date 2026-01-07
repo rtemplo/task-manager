@@ -12,8 +12,8 @@ interface TaskCardProps {
   index: number;
 }
 
-export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
-  const { users, tasks, draggedTaskId, setModalMode, setTasks, setError, setDraggedTaskId, saveCustomSort } =
+export const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
+  const { users, tasks, draggedTaskId, setModalMode, setTasks, setError, setDraggedTaskId } =
     useTaskManagerContext();
   const { setTaskFormData } = useTaskForm();
 
@@ -37,69 +37,28 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
 
       const sourceStatus = draggedTask.status;
       const targetStatus = task.status;
-      const targetIndex = index;
 
-      // If dragging within the same column
-      if (sourceStatus === targetStatus) {
-        const statusTasks = tasks.filter((t) => t.status === sourceStatus);
-        const sourceIndex = statusTasks.findIndex((t) => t.id === draggedTaskId);
+      // Only handle cross-column moves (moving between different statuses)
+      if (sourceStatus === targetStatus) return;
 
-        if (sourceIndex === targetIndex) return;
-
-        // Reorder tasks within the same column
-        setTasks((prevTasks) => {
-          const columnTasks = prevTasks.filter((t) => t.status === sourceStatus);
-          const draggedItem = columnTasks[sourceIndex];
-
-          const reorderedColumnTasks = [...columnTasks];
-          reorderedColumnTasks.splice(sourceIndex, 1);
-          reorderedColumnTasks.splice(targetIndex, 0, draggedItem);
-
-          const otherTasks = prevTasks.filter((t) => t.status !== sourceStatus);
-          return [...otherTasks, ...reorderedColumnTasks];
-        });
-      } else {
-        // Moving to a different column - update status and insert at drop position
-        const updateTaskStatus = async () => {
-          try {
-            const updatedTask = await taskApi.updateStatus(draggedTaskId, targetStatus);
-            setTasks((prevTasks) => {
-              // Remove the dragged task from all tasks
-              const tasksWithoutDragged = prevTasks.filter((t) => t.id !== draggedTaskId);
-
-              // Get tasks in the target column
-              const targetColumnTasks = tasksWithoutDragged.filter((t) => t.status === targetStatus);
-
-              // Insert the updated task at the drop position
-              targetColumnTasks.splice(targetIndex, 0, updatedTask);
-
-              // Merge with tasks from other columns
-              const otherColumnTasks = tasksWithoutDragged.filter((t) => t.status !== targetStatus);
-              return [...otherColumnTasks, ...targetColumnTasks];
-            });
-          } catch (err) {
-            console.error("Error updating task status:", err);
-            setError(err instanceof Error ? err.message : "Failed to update task");
-          }
-        };
-        updateTaskStatus();
-      }
+      // Moving to a different column - update status in backend
+      const updateTaskStatus = async () => {
+        try {
+          const updatedTask = await taskApi.updateStatus(draggedTaskId, targetStatus);
+          setTasks((prevTasks) => prevTasks.map((t) => (t.id === draggedTaskId ? updatedTask : t)));
+        } catch (err) {
+          console.error("Error updating task status:", err);
+          setError(err instanceof Error ? err.message : "Failed to update task");
+        }
+      };
+      updateTaskStatus();
     },
-    [draggedTaskId, tasks, task.status, index, setTasks, setError]
+    [draggedTaskId, tasks, task.status, setTasks, setError]
   );
 
   const handleDragEnd = useCallback(() => {
-    // Save custom sort for the affected column(s)
-    if (draggedTaskId) {
-      const draggedTask = tasks.find((t) => t.id === draggedTaskId);
-      if (draggedTask) {
-        const statusTasks = tasks.filter((t) => t.status === draggedTask.status);
-        const taskIds = statusTasks.map((t) => t.id);
-        saveCustomSort(draggedTask.status, taskIds);
-      }
-    }
     setDraggedTaskId(null);
-  }, [draggedTaskId, tasks, saveCustomSort, setDraggedTaskId]);
+  }, [setDraggedTaskId]);
 
   const editTask = useCallback(
     (taskId: string) => {

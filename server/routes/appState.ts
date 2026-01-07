@@ -13,12 +13,6 @@ router.get("/:userId", async (req: Request, res: Response) => {
       appState = new AppState({
         userId: req.params.userId,
         tasks: {
-          customSort: {
-            useCustomSort: false,
-            toDoListSeq: [],
-            inProgListSeq: [],
-            completedListSeq: [],
-          },
           sort: {
             columnConfigs: {
               todo: [],
@@ -35,37 +29,6 @@ router.get("/:userId", async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({
       message: "Error fetching app state",
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
-  }
-});
-
-// PUT update custom sort sequences
-router.put("/:userId/custom-sort", async (req: Request, res: Response) => {
-  try {
-    const { useCustomSort, toDoListSeq, inProgListSeq, completedListSeq } = req.body;
-
-    const appState = await AppState.findOneAndUpdate(
-      { userId: req.params.userId },
-      {
-        $set: {
-          "tasks.customSort.useCustomSort": useCustomSort,
-          "tasks.customSort.toDoListSeq": toDoListSeq,
-          "tasks.customSort.inProgListSeq": inProgListSeq,
-          "tasks.customSort.completedListSeq": completedListSeq,
-        },
-      },
-      {
-        new: true,
-        upsert: true,
-        runValidators: true,
-      }
-    );
-
-    res.json(appState);
-  } catch (error) {
-    res.status(400).json({
-      message: "Error updating custom sort",
       error: error instanceof Error ? error.message : "Unknown error",
     });
   }
