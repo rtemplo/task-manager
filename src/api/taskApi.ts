@@ -96,7 +96,7 @@ export const appStateApi = {
   async updateSortConfig(
     userId: string,
     sortConfig: {
-      columnConfigs: ColumnSortConfig;
+      columnSortConfigs: ColumnSortConfig;
     }
   ): Promise<AppState> {
     const response = await fetch(`${API_BASE_URL}/app-state/${userId}/sort-config`, {

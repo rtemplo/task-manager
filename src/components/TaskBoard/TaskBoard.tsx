@@ -6,30 +6,42 @@ import { TaskCard } from "../TaskCard/TaskCard";
 import styles from "./TaskBoard.module.css";
 
 export const TaskBoard: React.FC = () => {
-  const { tasksByStatus, appState, draggedTaskId, tasks, setTasks, setError } = useTaskManagerContext();
+  const {
+    groupedTasks,
+    appState,
+    draggedTask,
+    dragTarget,
+    customTaskSequences,
+    setError,
+    setTasks,
+    setGroupedTasks,
+    setDragTarget,
+    setDragCompleted,
+    setCustomTaskSequences,
+  } = useTaskManagerContext();
 
   // Handle drag over empty column or empty space in column
   const handleColumnDragOver = useCallback(
-    (e: React.DragEvent, targetStatus: TaskStatus) => {
+    (e: React.DragEvent<HTMLDivElement>, targetStatus: TaskStatus) => {
       e.preventDefault();
+      e.stopPropagation();
 
-      if (!draggedTaskId) return;
-
-      // Find the dragged task
-      const draggedTask = tasks.find((t) => t.id === draggedTaskId);
       if (!draggedTask) return;
 
-      const sourceStatus = draggedTask.status;
+      if (dragTarget && dragTarget.status === targetStatus) return;
 
-      // Only handle cross-column moves
-      if (sourceStatus === targetStatus) return;
+      const updatedGroupedTasks = { ...groupedTasks };
 
-      // Optimistically update UI - move task to the target column
-      setTasks((prevTasks) =>
-        prevTasks.map((t) => (t.id === draggedTaskId ? { ...t, status: targetStatus } : t))
-      );
+      // Remove from all columns
+      for (const status of ["todo", "in-progress", "done"] as TaskStatus[]) {
+        updatedGroupedTasks[status] = updatedGroupedTasks[status].filter((t) => t.id !== draggedTask.task.id);
+      }
+
+      updatedGroupedTasks[targetStatus].splice(updatedGroupedTasks[targetStatus].length, 0, draggedTask.task);
+      setGroupedTasks(updatedGroupedTasks);
+      setDragTarget({ status: targetStatus });
     },
-    [draggedTaskId, tasks, setTasks]
+    [draggedTask, dragTarget, groupedTasks, setGroupedTasks, setDragTarget]
   );
 
   // Handle drop in empty column or empty space
@@ -37,17 +49,54 @@ export const TaskBoard: React.FC = () => {
     async (e: React.DragEvent, targetStatus: TaskStatus) => {
       e.preventDefault();
 
-      if (!draggedTaskId) return;
+      if (!draggedTask || !dragTarget) {
+        setDragCompleted(false);
+        return;
+      }
+
+      const sourceStatus = draggedTask.task.status;
 
       try {
         // Update task status in backend
-        await taskApi.updateStatus(draggedTaskId, targetStatus);
+        if (sourceStatus !== targetStatus) {
+          await taskApi.updateStatus(draggedTask.task.id, targetStatus);
+          // Update local tasks state to reflect the status change
+          setTasks((prevTasks) =>
+            prevTasks.map((t) => (t.id === draggedTask.task.id ? { ...t, status: targetStatus } : t))
+          );
+        }
+        setDragCompleted(true);
+
+        // Save custom sequences on successful drop
+        const updatedSequences = { ...customTaskSequences };
+        updatedSequences[targetStatus] = {
+          useSequence: true,
+          sequence: groupedTasks[targetStatus].map((t) => t.id),
+        };
+        // If cross-column, also update source column
+        if (sourceStatus !== targetStatus) {
+          updatedSequences[sourceStatus] = {
+            useSequence: true,
+            sequence: groupedTasks[sourceStatus].map((t) => t.id),
+          };
+        }
+        setCustomTaskSequences(updatedSequences);
       } catch (err) {
+        setDragCompleted(false);
         console.error("Error updating task status:", err);
         setError(err instanceof Error ? err.message : "Failed to update task");
       }
     },
-    [draggedTaskId, setError]
+    [
+      draggedTask,
+      dragTarget,
+      groupedTasks,
+      customTaskSequences,
+      setError,
+      setTasks,
+      setDragCompleted,
+      setCustomTaskSequences,
+    ]
   );
 
   // Get sort indicator text for a column
@@ -55,8 +104,13 @@ export const TaskBoard: React.FC = () => {
     return (status: TaskStatus): string | null => {
       if (!appState) return null;
 
+      // Check for custom drag-and-drop sequence first
+      if (customTaskSequences[status].useSequence) {
+        return "Custom";
+      }
+
       // Check for configured sort from sort modal
-      const sortConfig = appState.tasks.sort.columnConfigs[status];
+      const sortConfig = appState.tasks.sort.columnSortConfigs[status];
       if (sortConfig && sortConfig.length > 0) {
         const sortParts = sortConfig.map((opt) => {
           const fieldLabel =
@@ -69,10 +123,10 @@ export const TaskBoard: React.FC = () => {
 
       return null;
     };
-  }, [appState]);
+  }, [appState, customTaskSequences]);
 
   const renderColumn = (status: TaskStatus, title: string) => {
-    const columnTasks = tasksByStatus[status];
+    const columnTasks = groupedTasks[status];
     const sortIndicator = getSortIndicator(status);
 
     return (

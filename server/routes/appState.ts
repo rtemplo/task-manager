@@ -14,7 +14,7 @@ router.get("/:userId", async (req: Request, res: Response) => {
         userId: req.params.userId,
         tasks: {
           sort: {
-            columnConfigs: {
+            columnSortConfigs: {
               todo: [],
               "in-progress": [],
               done: [],
@@ -37,13 +37,13 @@ router.get("/:userId", async (req: Request, res: Response) => {
 // PUT update sort configuration
 router.put("/:userId/sort-config", async (req: Request, res: Response) => {
   try {
-    const { columnConfigs } = req.body;
+    const { columnSortConfigs } = req.body;
 
     const appState = await AppState.findOneAndUpdate(
       { userId: req.params.userId },
       {
         $set: {
-          "tasks.sort.columnConfigs": columnConfigs,
+          "tasks.sort.columnSortConfigs": columnSortConfigs,
         },
       },
       {

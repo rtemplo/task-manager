@@ -16,7 +16,7 @@ export interface IAppState extends Document {
   tasks: {
     sort: {
       applyToAllColumns: boolean;
-      columnConfigs: IColumnSortConfig;
+      columnSortConfigs: IColumnSortConfig;
     };
   };
   createdAt: string;
@@ -48,18 +48,18 @@ const appStateSchema = new Schema<IAppState>(
     },
     tasks: {
       sort: {
-        columnConfigs: {
+        columnSortConfigs: {
           todo: {
             type: [sortOptionSchema],
-            default: [],
+            default: [{ field: "dueDate", direction: "ascending" }],
           },
           "in-progress": {
             type: [sortOptionSchema],
-            default: [],
+            default: [{ field: "dueDate", direction: "ascending" }],
           },
           done: {
             type: [sortOptionSchema],
-            default: [],
+            default: [{ field: "dueDate", direction: "ascending" }],
           },
         },
       },

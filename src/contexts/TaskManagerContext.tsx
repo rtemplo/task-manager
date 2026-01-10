@@ -9,62 +9,132 @@ import {
   useState,
 } from "react";
 import { appStateApi, taskApi, userApi } from "../api/taskApi";
-import type { AppState, ModalMode, SortOption, Task, User } from "../common/types";
+import type {
+  AppState,
+  CustomTaskSequences,
+  GroupedTasks,
+  ModalMode,
+  SortOption,
+  Task,
+  TaskStatus,
+  User,
+} from "../common/types";
+import { useLocalStorage } from "../hooks/useLocalStorage";
 
 const USER_ID = "default-user"; // TODO: Replace with actual user auth
 
 interface ITaskContext {
   loading: boolean;
   tasks: Task[];
-  filteredTasks: Task[];
-  tasksByStatus: Record<"todo" | "in-progress" | "done", Task[]>;
+  groupedTasks: GroupedTasks;
   users: User[];
   error: string | null;
   modalMode: ModalMode | null;
-  draggedTaskId?: string | null;
+  draggedTask?: { index: number; task: Task } | null;
+  dragTarget?: { index?: number; status: TaskStatus } | null;
+  dragCompleted?: boolean;
   appState: AppState | null;
+  customTaskSequences: CustomTaskSequences;
   setLoading: Dispatch<SetStateAction<boolean>>;
   setTasks: Dispatch<SetStateAction<Task[]>>;
+  setGroupedTasks: Dispatch<SetStateAction<GroupedTasks>>;
   setUsers: Dispatch<SetStateAction<User[]>>;
   setError: Dispatch<SetStateAction<string | null>>;
   setModalMode: Dispatch<SetStateAction<ModalMode | null>>;
-  setDraggedTaskId: Dispatch<SetStateAction<string | null>>;
+  setDraggedTask: Dispatch<SetStateAction<{ index: number; task: Task } | null>>;
+  setDragTarget: Dispatch<SetStateAction<{ index?: number; status: TaskStatus } | null>>;
+  setDragCompleted: Dispatch<SetStateAction<boolean | undefined>>;
   setAppState: Dispatch<SetStateAction<AppState | null>>;
+  setCustomTaskSequences: Dispatch<SetStateAction<CustomTaskSequences>>;
 }
 
 const TaskManagerContext = createContext<ITaskContext>({
   loading: true,
   tasks: [],
-  filteredTasks: [],
-  tasksByStatus: { todo: [], "in-progress": [], done: [] },
+  groupedTasks: { todo: [], "in-progress": [], done: [] },
   users: [],
   error: null,
   modalMode: null,
-  draggedTaskId: null,
+  draggedTask: null,
+  dragTarget: null,
+  dragCompleted: undefined,
   appState: null,
+  customTaskSequences: {
+    todo: { useSequence: false, sequence: [] },
+    "in-progress": { useSequence: false, sequence: [] },
+    done: { useSequence: false, sequence: [] },
+  },
   setLoading: () => {},
   setTasks: () => {},
+  setGroupedTasks: () => {},
   setUsers: () => {},
   setError: () => {},
   setModalMode: () => {},
-  setDraggedTaskId: () => {},
+  setDraggedTask: () => {},
+  setDragTarget: () => {},
+  setDragCompleted: () => {},
   setAppState: () => {},
+  setCustomTaskSequences: () => {},
 });
 
 const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const defaultGroupedTasks: GroupedTasks = {
+    todo: [],
+    "in-progress": [],
+    done: [],
+  };
+
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [groupedTasks, setGroupedTasks] = useState<GroupedTasks>(defaultGroupedTasks);
   const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [modalMode, setModalMode] = useState<ModalMode | null>(null);
-  const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
+  const [draggedTask, setDraggedTask] = useState<{
+    index: number;
+    task: Task;
+  } | null>(null);
+  const [dragTarget, setDragTarget] = useState<{ index?: number; status: TaskStatus } | null>(null);
+  const [dragCompleted, setDragCompleted] = useState<boolean | undefined>(undefined);
   const [appState, setAppState] = useState<AppState | null>(null);
+  const [customTaskSequences, setCustomTaskSequences] = useLocalStorage<CustomTaskSequences>(
+    "task-manager-custom-sequences",
+    {
+      todo: { useSequence: false, sequence: [] },
+      "in-progress": { useSequence: false, sequence: [] },
+      done: { useSequence: false, sequence: [] },
+    }
+  );
+
+  const columnSortConfigs = appState?.tasks.sort.columnSortConfigs;
 
   const filteredTasks = useMemo(() => {
     // Implement filter logic here (search, assignee, priority, tags, due date)
     // TODO: Apply filtering based on filter state
     return tasks;
   }, [tasks]);
+
+  // Apply custom sequence ordering to tasks
+  const applyCustomSequence = useCallback((tasks: Task[], sequence: string[]): Task[] => {
+    const taskMap = new Map(tasks.map((t) => [t.id, t]));
+    const ordered: Task[] = [];
+
+    // Add tasks in sequence order
+    for (const id of sequence) {
+      const task = taskMap.get(id);
+      if (task) {
+        ordered.push(task);
+        taskMap.delete(id);
+      }
+    }
+
+    // Append new tasks not in sequence to the bottom
+    for (const task of taskMap.values()) {
+      ordered.push(task);
+    }
+
+    return ordered;
+  }, []);
 
   // Sort tasks based on SortOption configuration
   const sortTasks = useCallback(
@@ -109,36 +179,41 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
     []
   );
 
-  // Group tasks by status and apply sorting
-  const tasksByStatus = useMemo(() => {
-    const grouped = {
-      todo: filteredTasks.filter((task) => task.status === "todo"),
-      "in-progress": filteredTasks.filter((task) => task.status === "in-progress"),
-      done: filteredTasks.filter((task) => task.status === "done"),
-    };
+  useEffect(() => {
+    /**
+     * This useEffect updates groupedTasks and applies sorting based on any existing custom
+     * configurations made through the sorting modal panel or custom drag-and-drop sequences.
+     */
+    if (filteredTasks.length > 0) {
+      const updatedGroupedTasks = Object.groupBy(filteredTasks, (task) => task.status) as Record<
+        TaskStatus,
+        Task[]
+      >;
 
-    // Create users map for efficient lookup
-    const usersMap = new Map(users.map((u) => [u.id, u]));
+      // Create users map for efficient lookup
+      const usersMap = new Map(users.map((u) => [u.id, u]));
 
-    // Apply sort configuration from SortModal
-    if (appState?.tasks.sort.columnConfigs) {
-      const { columnConfigs } = appState.tasks.sort;
-
-      if (columnConfigs.todo && columnConfigs.todo.length > 0) {
-        grouped.todo = sortTasks(grouped.todo, columnConfigs.todo, usersMap);
+      // Apply custom sequence or sort configuration for each column
+      for (const status of ["todo", "in-progress", "done"] as TaskStatus[]) {
+        if (customTaskSequences[status].useSequence) {
+          // Custom drag-and-drop order takes precedence
+          updatedGroupedTasks[status] = applyCustomSequence(
+            updatedGroupedTasks[status],
+            customTaskSequences[status].sequence
+          );
+        } else if (columnSortConfigs?.[status] && columnSortConfigs[status].length > 0) {
+          // Apply sort modal configuration if no custom sequence
+          updatedGroupedTasks[status] = sortTasks(
+            updatedGroupedTasks[status],
+            columnSortConfigs[status],
+            usersMap
+          );
+        }
       }
 
-      if (columnConfigs["in-progress"] && columnConfigs["in-progress"].length > 0) {
-        grouped["in-progress"] = sortTasks(grouped["in-progress"], columnConfigs["in-progress"], usersMap);
-      }
-
-      if (columnConfigs.done && columnConfigs.done.length > 0) {
-        grouped.done = sortTasks(grouped.done, columnConfigs.done, usersMap);
-      }
+      setGroupedTasks(updatedGroupedTasks);
     }
-
-    return grouped;
-  }, [filteredTasks, appState, users, sortTasks]);
+  }, [filteredTasks, columnSortConfigs, users, sortTasks, customTaskSequences, applyCustomSequence]);
 
   // Load initial data
   useEffect(() => {
@@ -170,20 +245,26 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         loading,
         tasks,
-        filteredTasks,
-        tasksByStatus,
+        groupedTasks,
         users,
         error,
         modalMode,
-        draggedTaskId,
+        draggedTask,
+        dragTarget,
+        dragCompleted,
         appState,
+        customTaskSequences,
         setLoading,
         setTasks,
+        setGroupedTasks,
         setUsers,
         setError,
         setModalMode,
-        setDraggedTaskId,
+        setDraggedTask,
+        setDragTarget,
+        setDragCompleted,
         setAppState,
+        setCustomTaskSequences,
       }}
     >
       {children}

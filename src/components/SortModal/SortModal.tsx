@@ -5,7 +5,8 @@ import { useTaskManagerContext } from "../../contexts/TaskManagerContext";
 import styles from "./SortModal.module.css";
 
 export const SortModal: React.FC = () => {
-  const { setModalMode, appState, setAppState } = useTaskManagerContext();
+  const { setModalMode, appState, setAppState, customTaskSequences, setCustomTaskSequences } =
+    useTaskManagerContext();
   const [draggedSortIndex, setDraggedSortIndex] = useState<number | null>(null);
   const [selectedColumns, setSelectedColumns] = useState<TaskStatus[]>(["todo", "in-progress", "done"]);
 
@@ -105,11 +106,11 @@ export const SortModal: React.FC = () => {
   useEffect(() => {
     if (!appState) return;
 
-    const { columnConfigs } = appState.tasks.sort;
+    const { columnSortConfigs } = appState.tasks.sort;
     const firstColumn = selectedColumns[0] || "todo";
 
     // Load sort options for the first selected column
-    const columnConfig = columnConfigs[firstColumn];
+    const columnConfig = columnSortConfigs[firstColumn];
     if (columnConfig && columnConfig.length > 0) {
       setSortOptions(columnConfig);
 
@@ -134,14 +135,24 @@ export const SortModal: React.FC = () => {
       // Build column configs
       // - Selected columns get the current sortOptions
       // - Unselected columns preserve their existing configuration
-      const columnConfigs = { ...appState.tasks.sort.columnConfigs };
+      const columnSortConfigs = { ...appState.tasks.sort.columnSortConfigs };
 
       for (const column of selectedColumns) {
-        columnConfigs[column] = sortOptions;
+        columnSortConfigs[column] = sortOptions;
       }
 
       // Save sort configuration
-      await appStateApi.updateSortConfig(USER_ID, { columnConfigs });
+      await appStateApi.updateSortConfig(USER_ID, { columnSortConfigs });
+
+      // Clear custom sequences for selected columns
+      const updatedSequences = { ...customTaskSequences };
+      for (const column of selectedColumns) {
+        updatedSequences[column] = {
+          useSequence: false,
+          sequence: [],
+        };
+      }
+      setCustomTaskSequences(updatedSequences);
 
       // Fetch the complete updated appState
       const updatedAppState = await appStateApi.get(USER_ID);
@@ -150,7 +161,15 @@ export const SortModal: React.FC = () => {
     } catch (err) {
       console.error("Error saving sort config:", err);
     }
-  }, [appState, selectedColumns, sortOptions, setAppState, closeSortModal]);
+  }, [
+    appState,
+    selectedColumns,
+    sortOptions,
+    setAppState,
+    closeSortModal,
+    setCustomTaskSequences,
+    customTaskSequences,
+  ]);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {

@@ -23,6 +23,14 @@ export interface Task {
   isRecentlyUpdated?: boolean;
 }
 
+export type GroupedTasks = Record<TaskStatus, Task[]>;
+export type CustomTaskSequences = {
+  [key in TaskStatus]: {
+    useSequence: boolean;
+    sequence: string[];
+  };
+};
+
 export interface TaskFilters {
   searchQuery: string;
   assigneeIds: string[];
@@ -71,7 +79,7 @@ export interface AppState {
   userId: string;
   tasks: {
     sort: {
-      columnConfigs: ColumnSortConfig;
+      columnSortConfigs: ColumnSortConfig;
     };
   };
   createdAt: string;

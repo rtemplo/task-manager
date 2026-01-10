@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { FaRegEdit } from "react-icons/fa";
 import { TiDeleteOutline } from "react-icons/ti";
 import { taskApi } from "../../api/taskApi";
-import type { Task } from "../../common/types";
+import type { Task, TaskStatus } from "../../common/types";
 import { useTaskForm } from "../../contexts/TaskFormContext";
 import { useTaskManagerContext } from "../../contexts/TaskManagerContext";
 import styles from "./TaskCard.module.css";
@@ -12,53 +12,124 @@ interface TaskCardProps {
   index: number;
 }
 
-export const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
-  const { users, tasks, draggedTaskId, setModalMode, setTasks, setError, setDraggedTaskId } =
-    useTaskManagerContext();
+export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
+  const {
+    users,
+    tasks,
+    groupedTasks,
+    draggedTask,
+    dragTarget,
+    dragCompleted,
+    customTaskSequences,
+    setModalMode,
+    setTasks,
+    setGroupedTasks,
+    setError,
+    setDraggedTask,
+    setDragTarget,
+    setDragCompleted,
+    setCustomTaskSequences,
+  } = useTaskManagerContext();
   const { setTaskFormData } = useTaskForm();
 
   const user = users.find((user) => user.id === task.assigneeId);
   const overdue = task.dueDate < new Date().toISOString() && task.status !== "done";
 
-  const handleDragStart = useCallback(() => {
-    setDraggedTaskId(task.id);
-  }, [task.id, setDraggedTaskId]);
+  const handleDragStart = useCallback(
+    (sourceIndex: number) => {
+      setDraggedTask({ index: sourceIndex, task });
+    },
+    [task, setDraggedTask]
+  );
 
   const handleDragOver = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
       e.stopPropagation();
 
-      if (!draggedTaskId) return;
-
-      // Find the dragged task to get its current status
-      const draggedTask = tasks.find((t) => t.id === draggedTaskId);
       if (!draggedTask) return;
 
-      const sourceStatus = draggedTask.status;
+      let updatedGroupedTasks = { ...groupedTasks };
+
+      // Remove from all columns to prevent duplication
+      for (const status of ["todo", "in-progress", "done"] as TaskStatus[]) {
+        updatedGroupedTasks[status] = updatedGroupedTasks[status].filter((t) => t.id !== draggedTask.task.id);
+      }
+
+      const sourceIndex = draggedTask.index;
+      const sourceStatus = draggedTask.task.status;
       const targetStatus = task.status;
+      const targetIndex = index;
 
-      // Only handle cross-column moves (moving between different statuses)
-      if (sourceStatus === targetStatus) return;
+      if (sourceStatus === targetStatus && sourceIndex === targetIndex) return;
 
-      // Moving to a different column - update status in backend
-      const updateTaskStatus = async () => {
-        try {
-          const updatedTask = await taskApi.updateStatus(draggedTaskId, targetStatus);
-          setTasks((prevTasks) => prevTasks.map((t) => (t.id === draggedTaskId ? updatedTask : t)));
-        } catch (err) {
-          console.error("Error updating task status:", err);
-          setError(err instanceof Error ? err.message : "Failed to update task");
-        }
-      };
-      updateTaskStatus();
+      const updatedGroupTasks = [...updatedGroupedTasks[targetStatus]];
+
+      updatedGroupTasks.splice(targetIndex, 0, draggedTask.task);
+      updatedGroupTasks[targetIndex] = { ...updatedGroupTasks[targetIndex], status: targetStatus };
+      updatedGroupedTasks = { ...updatedGroupedTasks, [targetStatus]: updatedGroupTasks };
+
+      setGroupedTasks(updatedGroupedTasks);
+      setDragTarget({ index: targetIndex, status: targetStatus });
     },
-    [draggedTaskId, tasks, task.status, setTasks, setError]
+    [draggedTask, groupedTasks, setDragTarget, index, task.status, setGroupedTasks]
   );
 
   const handleDragEnd = useCallback(() => {
-    setDraggedTaskId(null);
-  }, [setDraggedTaskId]);
+    if (!draggedTask || !dragTarget) return;
+
+    const sourceStatus = draggedTask.task.status;
+    const sourceIndex = draggedTask.index;
+    const targetStatus = dragTarget.status;
+    const targetIndex = dragTarget.index ?? groupedTasks[targetStatus].length - 1;
+
+    if (dragCompleted === false) {
+      const updatedGroupedTasks = { ...groupedTasks };
+      // Revert the optimistic update
+      if (sourceStatus !== targetStatus) {
+        // Remove from target
+        updatedGroupedTasks[targetStatus].splice(targetIndex, 1);
+        // Re-insert into source
+        updatedGroupedTasks[sourceStatus].splice(sourceIndex, 0, draggedTask.task);
+        updatedGroupedTasks[sourceStatus][sourceIndex].status = sourceStatus;
+      } else {
+        updatedGroupedTasks[sourceStatus].splice(targetIndex, 1);
+        updatedGroupedTasks[sourceStatus].splice(sourceIndex, 0, draggedTask.task);
+      }
+
+      setGroupedTasks(updatedGroupedTasks);
+    } else if (dragCompleted === true) {
+      // Save custom sequences on successful drop
+      const updatedSequences = { ...customTaskSequences };
+      updatedSequences[targetStatus] = {
+        useSequence: true,
+        sequence: groupedTasks[targetStatus].map((t) => t.id),
+      };
+      // If cross-column, also update source column
+      if (sourceStatus !== targetStatus) {
+        updatedSequences[sourceStatus] = {
+          useSequence: true,
+          sequence: groupedTasks[sourceStatus].map((t) => t.id),
+        };
+      }
+      setCustomTaskSequences(updatedSequences);
+    }
+
+    setDraggedTask(null);
+    setDragTarget(null);
+    setDragCompleted(undefined);
+  }, [
+    draggedTask,
+    dragTarget,
+    groupedTasks,
+    dragCompleted,
+    customTaskSequences,
+    setDraggedTask,
+    setDragTarget,
+    setDragCompleted,
+    setGroupedTasks,
+    setCustomTaskSequences,
+  ]);
 
   const editTask = useCallback(
     (taskId: string) => {
@@ -107,7 +178,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
       key={task.id}
       className={`${styles.taskCard} ${styles[`priority-${task.priority}`]} ${overdue ? styles.overdue : ""}`}
       draggable
-      onDragStart={handleDragStart}
+      onDragStart={() => handleDragStart(index)}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
       role="button"
