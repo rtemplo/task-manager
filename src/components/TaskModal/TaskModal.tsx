@@ -4,6 +4,7 @@ import { taskApi } from "../../api/taskApi";
 import { useTaskForm } from "../../contexts/TaskFormContext";
 import { useTaskManagerContext } from "../../contexts/TaskManagerContext";
 import styles from "./TaskModal.module.css";
+import { RiCloseCircleLine } from "react-icons/ri";
 
 export const TaskModal: React.FC = () => {
   const {
@@ -79,7 +80,7 @@ export const TaskModal: React.FC = () => {
             className="closeIconBtn"
             onClick={closeAddNewTaskModal}
           >
-            ×
+            <RiCloseCircleLine size={28}/>
           </button>
         </div>
         {Object.entries(formValidationStatus).length > 0 && (
