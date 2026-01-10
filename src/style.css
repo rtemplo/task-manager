@@ -7,6 +7,11 @@
   color: rgba(255, 255, 255, 0.87);
   background-color: #242424;
 
+  /* Modal theme variables */
+  --modal-bg: rgb(48, 47, 47);
+  --modal-border: rgba(128, 128, 128, 0.5);
+  --modal-text: rgba(255, 255, 255, 0.87);
+
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -57,6 +62,11 @@ button:hover {
   :root {
     color: #213547;
     background-color: #ffffff;
+
+    /* Modal theme variables for light mode */
+    --modal-bg: #ffffff;
+    --modal-border: rgba(128, 128, 128, 0.3);
+    --modal-text: #213547;
   }
   a:hover {
     color: #747bff;
@@ -111,8 +121,9 @@ select {
   left: 50%;
   transform: translate(-50%, -50%);
   box-sizing: border-box;
-  border: 2px solid rgba(128, 128, 128, 0.5);
-  background: rgb(48, 47, 47);
+  border: 2px solid var(--modal-border);
+  background: var(--modal-bg);
+  color: var(--modal-text);
   border-radius: 0.75rem;
   z-index: 1000;
   padding: 1rem;
