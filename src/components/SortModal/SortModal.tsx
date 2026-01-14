@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
+import { RiCloseCircleLine } from "react-icons/ri";
 import { appStateApi } from "../../api/taskApi";
 import type { SortField, SortOption, TaskStatus } from "../../common/types";
 import { useTaskManagerContext } from "../../contexts/TaskManagerContext";
-import { RiCloseCircleLine } from "react-icons/ri"
 import styles from "./SortModal.module.css";
 
 export const SortModal: React.FC = () => {
@@ -197,7 +197,7 @@ export const SortModal: React.FC = () => {
             className="closeIconBtn"
             onClick={closeSortModal}
           >
-            <RiCloseCircleLine size={28}/>
+            <RiCloseCircleLine size={28} />
           </button>
         </div>
         <div className={styles.sortControls}>

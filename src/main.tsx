@@ -4,6 +4,7 @@ import { TaskFormProvider } from "./contexts/TaskFormContext";
 import { TaskManagerProvider } from "./contexts/TaskManagerContext";
 
 import "./style.css";
+import { TaskFilterProvider } from "./contexts/TaskManagerFilterContext";
 
 const rootElement = document.getElementById("root");
 if (rootElement) {
@@ -13,10 +14,12 @@ if (rootElement) {
     //     <App />
     //   </BrowserRouter>
     // </StrictMode>
-    <TaskManagerProvider>
-      <TaskFormProvider>
-        <TaskManager />
-      </TaskFormProvider>
-    </TaskManagerProvider>
+    <TaskFilterProvider>
+      <TaskManagerProvider>
+        <TaskFormProvider>
+          <TaskManager />
+        </TaskFormProvider>
+      </TaskManagerProvider>
+    </TaskFilterProvider>
   );
 }

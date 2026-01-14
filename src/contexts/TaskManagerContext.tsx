@@ -5,7 +5,6 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
   useState,
 } from "react";
 import { appStateApi, taskApi, userApi } from "../api/taskApi";
@@ -20,6 +19,7 @@ import type {
   User,
 } from "../common/types";
 import { useLocalStorage } from "../hooks/useLocalStorage";
+import { useTaskFilterContext } from "./TaskManagerFilterContext";
 
 const USER_ID = "default-user"; // TODO: Replace with actual user auth
 
@@ -46,6 +46,7 @@ interface ITaskContext {
   setDragCompleted: Dispatch<SetStateAction<boolean | undefined>>;
   setAppState: Dispatch<SetStateAction<AppState | null>>;
   setCustomTaskSequences: Dispatch<SetStateAction<CustomTaskSequences>>;
+  applyFilters: () => void;
 }
 
 const TaskManagerContext = createContext<ITaskContext>({
@@ -75,6 +76,7 @@ const TaskManagerContext = createContext<ITaskContext>({
   setDragCompleted: () => {},
   setAppState: () => {},
   setCustomTaskSequences: () => {},
+  applyFilters: () => {},
 });
 
 const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -86,6 +88,7 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
   const [groupedTasks, setGroupedTasks] = useState<GroupedTasks>(defaultGroupedTasks);
   const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -108,11 +111,44 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const columnSortConfigs = appState?.tasks.sort.columnSortConfigs;
 
-  const filteredTasks = useMemo(() => {
-    // Implement filter logic here (search, assignee, priority, tags, due date)
-    // TODO: Apply filtering based on filter state
-    return tasks;
-  }, [tasks]);
+  const { filterState } = useTaskFilterContext();
+
+  const applyFilters = useCallback(() => {
+    let updatedTasks = [...tasks];
+    const { assigneeIds, priorities, dueDateRange } = filterState;
+    // Filter by assignee IDs
+    if (assigneeIds.length > 0) {
+      updatedTasks = updatedTasks.filter((task) => assigneeIds.includes(task.assigneeId));
+    }
+    // Filter by priorities
+    if (priorities.length > 0) {
+      updatedTasks = updatedTasks.filter((task) => priorities.includes(task.priority));
+    }
+    // Filter by due date range
+    if (dueDateRange) {
+      const fromDate = dueDateRange.from ? new Date(dueDateRange.from) : null;
+      const toDate = dueDateRange.to ? new Date(dueDateRange.to) : null;
+      updatedTasks = updatedTasks.filter((task) => {
+        const taskDueDate = new Date(task.dueDate);
+        if (fromDate && taskDueDate < fromDate) return false;
+        if (toDate && taskDueDate > toDate) return false;
+        return true;
+      });
+    }
+    if (filterState.query.trim() !== "") {
+      const queryLower = filterState.query.toLowerCase();
+      updatedTasks = updatedTasks.filter((task) => {
+        const titleMatch = task.title.toLowerCase().includes(queryLower);
+        const descriptionMatch = task.description.toLowerCase().includes(queryLower);
+        const tagsMatch = task.tags.some((tag) => tag.toLowerCase().includes(queryLower));
+        if (filterState.searchBy === "title") return titleMatch;
+        if (filterState.searchBy === "description") return descriptionMatch;
+        if (filterState.searchBy === "tags") return tagsMatch;
+        return titleMatch || descriptionMatch || tagsMatch;
+      });
+    }
+    setFilteredTasks(updatedTasks);
+  }, [tasks, filterState]);
 
   // Apply custom sequence ordering to tasks
   const applyCustomSequence = useCallback((tasks: Task[], sequence: string[]): Task[] => {
@@ -184,35 +220,41 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
      * This useEffect updates groupedTasks and applies sorting based on any existing custom
      * configurations made through the sorting modal panel or custom drag-and-drop sequences.
      */
-    if (filteredTasks.length > 0) {
-      const updatedGroupedTasks = Object.groupBy(filteredTasks, (task) => task.status) as Record<
-        TaskStatus,
-        Task[]
-      >;
+    // if (filteredTasks.length > 0) {
+    const updatedGroupedTasks = Object.groupBy(filteredTasks, (task) => task.status) as Record<
+      TaskStatus,
+      Task[]
+    >;
 
-      // Create users map for efficient lookup
-      const usersMap = new Map(users.map((u) => [u.id, u]));
-
-      // Apply custom sequence or sort configuration for each column
-      for (const status of ["todo", "in-progress", "done"] as TaskStatus[]) {
-        if (customTaskSequences[status].useSequence) {
-          // Custom drag-and-drop order takes precedence
-          updatedGroupedTasks[status] = applyCustomSequence(
-            updatedGroupedTasks[status],
-            customTaskSequences[status].sequence
-          );
-        } else if (columnSortConfigs?.[status] && columnSortConfigs[status].length > 0) {
-          // Apply sort modal configuration if no custom sequence
-          updatedGroupedTasks[status] = sortTasks(
-            updatedGroupedTasks[status],
-            columnSortConfigs[status],
-            usersMap
-          );
-        }
+    for (const status of ["todo", "in-progress", "done"] as TaskStatus[]) {
+      if (!updatedGroupedTasks[status]) {
+        updatedGroupedTasks[status] = [];
       }
-
-      setGroupedTasks(updatedGroupedTasks);
     }
+
+    // Create users map for efficient lookup
+    const usersMap = new Map(users.map((u) => [u.id, u]));
+
+    // Apply custom sequence or sort configuration for each column
+    for (const status of ["todo", "in-progress", "done"] as TaskStatus[]) {
+      if (customTaskSequences[status].useSequence) {
+        // Custom drag-and-drop order takes precedence
+        updatedGroupedTasks[status] = applyCustomSequence(
+          updatedGroupedTasks[status],
+          customTaskSequences[status].sequence
+        );
+      } else if (columnSortConfigs?.[status] && columnSortConfigs[status].length > 0) {
+        // Apply sort modal configuration if no custom sequence
+        updatedGroupedTasks[status] = sortTasks(
+          updatedGroupedTasks[status],
+          columnSortConfigs[status],
+          usersMap
+        );
+      }
+    }
+
+    setGroupedTasks(updatedGroupedTasks);
+    // }
   }, [filteredTasks, columnSortConfigs, users, sortTasks, customTaskSequences, applyCustomSequence]);
 
   // Load initial data
@@ -227,6 +269,7 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
           appStateApi.get(USER_ID),
         ]);
         setTasks(tasksData);
+        setFilteredTasks(tasksData);
         setUsers(usersData);
         setAppState(appStateData);
       } catch (err) {
@@ -265,6 +308,7 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setDragCompleted,
         setAppState,
         setCustomTaskSequences,
+        applyFilters,
       }}
     >
       {children}

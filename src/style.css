@@ -132,7 +132,6 @@ select {
   gap: 0.8rem;
 
   & .header {
-    margin-bottom: 1rem;
     padding-bottom: 0.75rem;
     border-bottom: 2px solid rgba(128, 128, 128, 0.2);
     display: flex;
@@ -236,7 +235,7 @@ select {
     padding-top: 0.75rem;
     border-top: 2px solid rgba(128, 128, 128, 0.2);
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-evenly;
     gap: 1rem;
 
     & .actionBtn {
@@ -263,6 +262,12 @@ select {
 
       &:hover {
         background: #2563eb;
+      }
+
+      &:disabled {
+        background: #213547;
+        cursor: not-allowed;
+        opacity: 0.6;
       }
     }
   }

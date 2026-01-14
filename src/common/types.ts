@@ -52,7 +52,7 @@ export interface TaskFormData {
   status: TaskStatus;
 }
 
-export type ModalMode = "add" | "edit" | "sort";
+export type ModalMode = "add" | "edit" | "sort" | "filter";
 
 export type SimulatedAction =
   | { type: "ADD_TASK"; task: Task }
@@ -74,6 +74,24 @@ export interface ColumnSortConfig {
   "in-progress": SortOption[];
   done: SortOption[];
 }
+
+export type SearchBy = "title" | "description" | "tags" | "all";
+
+export interface FilterState {
+  query: string;
+  searchBy: SearchBy;
+  assigneeIds: string[];
+  priorities: TaskPriority[];
+  dueDateRange: { from?: string; to?: string } | null;
+}
+
+export type FilterAction =
+  | { type: "SET_SEARCH_BY"; payload: { searchBy: FilterState["searchBy"] } }
+  | { type: "SET_ASSIGNEE_IDS"; payload: { assigneeIds: string[] } }
+  | { type: "SET_PRIORITIES"; payload: { priorities: TaskPriority[] } }
+  | { type: "SET_DUE_DATE_RANGE"; payload: { dueDateRange: FilterState["dueDateRange"] } }
+  | { type: "RESET_FILTERS" }
+  | { type: "SET_QUERY"; payload: { query: string } };
 
 export interface AppState {
   userId: string;

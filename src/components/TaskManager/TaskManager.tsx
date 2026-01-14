@@ -1,4 +1,5 @@
 import { useTaskManagerContext } from "../../contexts/TaskManagerContext";
+import { FilterModal } from "../FilterModal/FilterModal";
 import { FilterPanel } from "../FilterPanel/FilterPanel";
 import { SortModal } from "../SortModal/SortModal";
 import { Stats } from "../Stats/Stats";
@@ -27,8 +28,9 @@ const TaskManager: React.FC = () => {
         </div>
       )}
 
-      {modalMode && modalMode !== "sort" && <TaskModal />}
+      {(modalMode === "add" || modalMode === "edit") && <TaskModal />}
       {modalMode === "sort" && <SortModal />}
+      {modalMode === "filter" && <FilterModal />}
 
       <TaskManagerHeader />
       <FilterPanel />
