@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import { appStateApi, taskApi, userApi } from "../api/taskApi";
@@ -112,6 +113,7 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const columnSortConfigs = appState?.tasks.sort.columnSortConfigs;
 
   const { filterState } = useTaskFilterContext();
+  const filterStateQueryRef = useRef(filterState.query);
 
   const applyFilters = useCallback(() => {
     let updatedTasks = [...tasks];
@@ -149,6 +151,13 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     setFilteredTasks(updatedTasks);
   }, [tasks, filterState]);
+
+  useEffect(() => {
+    if (filterState.query !== filterStateQueryRef.current) {
+      applyFilters();
+    }
+    filterStateQueryRef.current = filterState.query;
+  }, [applyFilters, filterState.query]);
 
   // Apply custom sequence ordering to tasks
   const applyCustomSequence = useCallback((tasks: Task[], sequence: string[]): Task[] => {

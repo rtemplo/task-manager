@@ -1,28 +1,32 @@
-import { useCallback, useEffect, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
 import { useTaskManagerContext } from "../../contexts/TaskManagerContext";
 import { useTaskFilterContext } from "../../contexts/TaskManagerFilterContext";
 import { useDebounce } from "../../hooks/useDebounce";
 import styles from "./FilterPanel.module.css";
 
-export const FilterPanel: React.FC = () => {
-  const { setModalMode, applyFilters } = useTaskManagerContext();
+export interface FilterPanelRef {
+  clearSearch: () => void;
+}
+
+export const FilterPanel = forwardRef<FilterPanelRef>((_, ref) => {
+  const { setModalMode } = useTaskManagerContext();
   const { filterState, setFilterQuery } = useTaskFilterContext();
   const { searchBy } = filterState;
   const [query, setQuery] = useState("");
   const debouncedValue = useDebounce(query, 300);
 
+  useImperativeHandle(ref, () => ({
+    clearSearch: () => {
+      if (query === "") return;
+      setQuery((_prev) => {
+        return "";
+      });
+    },
+  }));
+
   useEffect(() => {
     setFilterQuery(debouncedValue);
   }, [debouncedValue, setFilterQuery]);
-
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Enter") {
-        applyFilters();
-      }
-    },
-    [applyFilters]
-  );
 
   const searchByText = searchBy === "all" ? "title, description, or tags" : searchBy;
 
@@ -32,10 +36,9 @@ export const FilterPanel: React.FC = () => {
         <input
           type="text"
           className={styles.searchInput}
-          placeholder={`Type ${searchByText} then press Enter to search tasks...`}
+          placeholder={`Search by ${searchByText}`}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={handleKeyDown}
         />
         <button type="button" className={styles.sortButton} onClick={() => setModalMode("filter")}>
           Search & Filter Options
@@ -74,4 +77,4 @@ export const FilterPanel: React.FC = () => {
       </div>
     </div>
   );
-};
+});

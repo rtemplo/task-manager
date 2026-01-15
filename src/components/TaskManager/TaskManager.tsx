@@ -1,6 +1,7 @@
+import { useRef } from "react";
 import { useTaskManagerContext } from "../../contexts/TaskManagerContext";
 import { FilterModal } from "../FilterModal/FilterModal";
-import { FilterPanel } from "../FilterPanel/FilterPanel";
+import { FilterPanel, type FilterPanelRef } from "../FilterPanel/FilterPanel";
 import { SortModal } from "../SortModal/SortModal";
 import { Stats } from "../Stats/Stats";
 import { TaskBoard } from "../TaskBoard/TaskBoard";
@@ -10,6 +11,7 @@ import styles from "./TaskManager.module.css";
 
 const TaskManager: React.FC = () => {
   const { loading, error, modalMode, setError } = useTaskManagerContext();
+  const filterPanelRef = useRef<FilterPanelRef>(null);
 
   return (
     <div className={styles.container}>
@@ -30,10 +32,10 @@ const TaskManager: React.FC = () => {
 
       {(modalMode === "add" || modalMode === "edit") && <TaskModal />}
       {modalMode === "sort" && <SortModal />}
-      {modalMode === "filter" && <FilterModal />}
+      {modalMode === "filter" && <FilterModal filterPanelRef={filterPanelRef} />}
 
       <TaskManagerHeader />
-      <FilterPanel />
+      <FilterPanel ref={filterPanelRef} />
       <TaskBoard />
       <Stats />
     </div>
