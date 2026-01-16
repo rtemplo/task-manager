@@ -2,7 +2,7 @@ import { useTaskManagerContext } from "../../contexts/TaskManagerContext";
 import { ControlBar } from "../ControlBar/ControlBar";
 import { FilterModal } from "../FilterModal/FilterModal";
 import { SortModal } from "../SortModal/SortModal";
-import { Stats } from "../Stats/Stats";
+import { StatsBar } from "../StatsBar/StatsBar";
 import { TaskBoard } from "../TaskBoard/TaskBoard";
 import { TaskManagerHeader } from "../TaskManagerHeader/TaskManagerHeader";
 import { TaskModal } from "../TaskModal/TaskModal";
@@ -36,7 +36,7 @@ const TaskManager: React.FC = () => {
       <TaskManagerHeader />
       <ControlBar />
       <TaskBoard />
-      <Stats />
+      <StatsBar />
     </div>
   );
 };
