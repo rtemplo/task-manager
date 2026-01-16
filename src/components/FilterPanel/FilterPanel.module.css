@@ -16,14 +16,41 @@
   margin-bottom: 0.5rem;
 }
 
-.searchInput {
+.searchInputWrapper {
   flex: 1;
   min-width: 250px;
-  padding: 0.75rem 1rem;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchInput {
+  flex: 1;
+  width: 100%;
+  padding: 0.75rem 2.5rem 0.75rem 1rem;
   border: 1px solid rgba(128, 128, 128, 0.3);
   border-radius: 0.5rem;
   font-size: 0.875rem;
   background: rgba(128, 128, 128, 0.05);
+}
+
+.clearButton {
+  position: absolute;
+  right: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(128, 128, 128, 0.6);
+  transition: color 0.2s;
+  font-size: 1.25rem;
+}
+
+.clearButton:hover {
+  color: rgba(128, 128, 128, 0.9);
 }
 
 .filterSelect {

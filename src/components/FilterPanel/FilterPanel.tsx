@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { IoCloseCircle } from "react-icons/io5";
 import { useTaskManagerContext } from "../../contexts/TaskManagerContext";
 import { useTaskFilterContext } from "../../contexts/TaskManagerFilterContext";
 import { useDebounce } from "../../hooks/useDebounce";
@@ -20,13 +21,26 @@ export const FilterPanel = () => {
   return (
     <div className={styles.filterPanel}>
       <div className={styles.filterControls}>
-        <input
-          type="text"
-          className={styles.searchInput}
-          placeholder={`Search by ${searchByText}`}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
+        <div className={styles.searchInputWrapper}>
+          <input
+            type="text"
+            className={styles.searchInput}
+            placeholder={`Search by ${searchByText}`}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          {query && (
+            <button
+              type="button"
+              className={styles.clearButton}
+              onClick={() => setQuery("")}
+              aria-label="Clear search"
+              title="Clear search"
+            >
+              <IoCloseCircle />
+            </button>
+          )}
+        </div>
         <button type="button" className={styles.sortButton} onClick={() => setModalMode("filter")}>
           Search & Filter Options
         </button>
