@@ -78,7 +78,6 @@ export interface ColumnSortConfig {
 export type SearchBy = "title" | "description" | "tags" | "all";
 
 export interface FilterState {
-  query: string;
   searchBy: SearchBy;
   assigneeIds: string[];
   priorities: TaskPriority[];
@@ -90,8 +89,7 @@ export type FilterAction =
   | { type: "SET_ASSIGNEE_IDS"; payload: { assigneeIds: string[] } }
   | { type: "SET_PRIORITIES"; payload: { priorities: TaskPriority[] } }
   | { type: "SET_DUE_DATE_RANGE"; payload: { dueDateRange: FilterState["dueDateRange"] } }
-  | { type: "RESET_FILTERS" }
-  | { type: "SET_QUERY"; payload: { query: string } };
+  | { type: "RESET_FILTERS" };
 
 export interface AppState {
   userId: string;

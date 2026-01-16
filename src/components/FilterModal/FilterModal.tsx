@@ -7,13 +7,15 @@ import { useTaskFilterContext } from "../../contexts/TaskManagerFilterContext";
 import styles from "./FilterModal.module.css";
 
 export const FilterModal: React.FC = () => {
-  const { users, setModalMode, applyFilters } = useTaskManagerContext();
+  const { users, setModalMode } = useTaskManagerContext();
   const {
+    filterState,
     filterState: { searchBy, assigneeIds, priorities, dueDateRange },
     setSearchBy,
     setAssigneeIds,
     setPriorities,
     setDueDateRange,
+    setAppliedFilters,
     resetFilters,
   } = useTaskFilterContext();
   const [userSearchText, setUserSearchText] = useState("");
@@ -69,9 +71,9 @@ export const FilterModal: React.FC = () => {
   }, [resetFilters]);
 
   const handleApplyFilters = useCallback(() => {
-    applyFilters();
+    setAppliedFilters(filterState);
     closeFilterModal();
-  }, [applyFilters, closeFilterModal]);
+  }, [filterState, setAppliedFilters, closeFilterModal]);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {

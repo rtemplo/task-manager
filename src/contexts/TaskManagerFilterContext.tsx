@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useReducer } from "react";
+import {
+  createContext,
+  type Dispatch,
+  type SetStateAction,
+  useCallback,
+  useContext,
+  useReducer,
+  useState,
+} from "react";
 import type { FilterAction, FilterState, TaskPriority } from "../common/types";
 
 const filterStateReducer = (state: FilterState, action: FilterAction) => {
@@ -11,11 +19,8 @@ const filterStateReducer = (state: FilterState, action: FilterAction) => {
       return { ...state, priorities: action.payload.priorities };
     case "SET_DUE_DATE_RANGE":
       return { ...state, dueDateRange: action.payload.dueDateRange };
-    case "SET_QUERY":
-      return { ...state, query: action.payload.query };
     case "RESET_FILTERS":
       return {
-        query: state.query,
         searchBy: "all" as const,
         assigneeIds: [],
         priorities: [],
@@ -28,38 +33,36 @@ const filterStateReducer = (state: FilterState, action: FilterAction) => {
 
 interface ITaskFilterContext {
   filterState: FilterState;
+  appliedFilters: FilterState;
   setSearchBy: (searchBy: FilterState["searchBy"]) => void;
   setAssigneeIds: (ids: string[]) => void;
   setPriorities: (priorities: FilterState["priorities"]) => void;
   setDueDateRange: (dueDateRange: FilterState["dueDateRange"]) => void;
-  setFilterQuery: (query: string) => void;
+  setAppliedFilters: Dispatch<SetStateAction<FilterState>>;
   resetFilters: () => void;
 }
 
+const defaultFilterState: FilterState = {
+  searchBy: "all",
+  assigneeIds: [],
+  priorities: [],
+  dueDateRange: null,
+};
+
 const TaskFilterContext = createContext<ITaskFilterContext>({
-  filterState: {
-    query: "",
-    searchBy: "all",
-    assigneeIds: [],
-    priorities: [],
-    dueDateRange: null,
-  },
+  filterState: defaultFilterState,
+  appliedFilters: defaultFilterState,
   setSearchBy: () => {},
   setAssigneeIds: () => {},
   setPriorities: () => {},
   setDueDateRange: () => {},
-  setFilterQuery: () => {},
+  setAppliedFilters: () => {},
   resetFilters: () => {},
 });
 
 export const TaskFilterProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [filterState, dispatch] = useReducer(filterStateReducer, {
-    query: "",
-    searchBy: "all",
-    assigneeIds: [],
-    priorities: [],
-    dueDateRange: null,
-  });
+  const [filterState, dispatch] = useReducer(filterStateReducer, defaultFilterState);
+  const [appliedFilters, setAppliedFilters] = useState<FilterState>(defaultFilterState);
 
   const setSearchBy = useCallback((searchBy: FilterState["searchBy"]) => {
     dispatch({ type: "SET_SEARCH_BY", payload: { searchBy } });
@@ -77,10 +80,6 @@ export const TaskFilterProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     dispatch({ type: "SET_DUE_DATE_RANGE", payload: { dueDateRange } });
   }, []);
 
-  const setFilterQuery = useCallback((query: string) => {
-    dispatch({ type: "SET_QUERY", payload: { query } });
-  }, []);
-
   const resetFilters = useCallback(() => {
     dispatch({ type: "RESET_FILTERS" });
   }, []);
@@ -89,11 +88,12 @@ export const TaskFilterProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     <TaskFilterContext.Provider
       value={{
         filterState,
+        appliedFilters,
         setSearchBy,
         setAssigneeIds,
         setPriorities,
         setDueDateRange,
-        setFilterQuery,
+        setAppliedFilters,
         resetFilters,
       }}
     >

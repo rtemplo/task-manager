@@ -5,15 +5,15 @@ import { useDebounce } from "../../hooks/useDebounce";
 import styles from "./FilterPanel.module.css";
 
 export const FilterPanel = () => {
-  const { setModalMode } = useTaskManagerContext();
-  const { filterState, setFilterQuery } = useTaskFilterContext();
-  const { searchBy } = filterState;
+  const { setModalMode, setSearchQuery } = useTaskManagerContext();
+  const { appliedFilters } = useTaskFilterContext();
+  const { searchBy } = appliedFilters;
   const [query, setQuery] = useState("");
   const debouncedValue = useDebounce(query, 300);
 
   useEffect(() => {
-    setFilterQuery(debouncedValue);
-  }, [debouncedValue, setFilterQuery]);
+    setSearchQuery(debouncedValue);
+  }, [debouncedValue, setSearchQuery]);
 
   const searchByText = searchBy === "all" ? "title, description, or tags" : searchBy;
 
@@ -35,23 +35,21 @@ export const FilterPanel = () => {
         </button>
       </div>
       <div className={styles.filterTags}>
-        {Object.keys(filterState)
+        {Object.keys(appliedFilters)
           .filter((key) => {
-            if (key === "query" && !filterState.query) return false;
-            if (key === "searchBy" && filterState.searchBy === "all") return false;
-            if (key === "assigneeIds" && filterState.assigneeIds.length === 0) return false;
-            if (key === "priorities" && filterState.priorities.length === 0) return false;
-            if (key === "dueDateRange" && !filterState.dueDateRange) return false;
+            if (key === "searchBy" && appliedFilters.searchBy === "all") return false;
+            if (key === "assigneeIds" && appliedFilters.assigneeIds.length === 0) return false;
+            if (key === "priorities" && appliedFilters.priorities.length === 0) return false;
+            if (key === "dueDateRange" && !appliedFilters.dueDateRange) return false;
             return true;
           })
           .map((key) => {
             let displayValue = "";
-            if (key === "query") displayValue = `Search: "${filterState.query}"`;
-            if (key === "searchBy") displayValue = `Search By: ${filterState.searchBy}`;
-            if (key === "assigneeIds") displayValue = `Assignees: ${filterState.assigneeIds.length}`;
-            if (key === "priorities") displayValue = `Priorities: ${filterState.priorities.length}`;
+            if (key === "searchBy") displayValue = `Search By: ${appliedFilters.searchBy}`;
+            if (key === "assigneeIds") displayValue = `Assignees: ${appliedFilters.assigneeIds.length}`;
+            if (key === "priorities") displayValue = `Priorities: ${appliedFilters.priorities.length}`;
             if (key === "dueDateRange") {
-              const range = filterState.dueDateRange;
+              const range = appliedFilters.dueDateRange;
               displayValue = `Due Date: ${range?.from ?? "Any"} - ${range?.to ?? "Any"}`;
             }
 

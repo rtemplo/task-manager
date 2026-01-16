@@ -5,7 +5,6 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useRef,
   useState,
 } from "react";
 import { appStateApi, taskApi, userApi } from "../api/taskApi";
@@ -37,6 +36,7 @@ interface ITaskContext {
   appState: AppState | null;
   customTaskSequences: CustomTaskSequences;
   refreshTasks: boolean;
+  searchQuery: string;
   setLoading: Dispatch<SetStateAction<boolean>>;
   setTasks: Dispatch<SetStateAction<Task[]>>;
   setGroupedTasks: Dispatch<SetStateAction<GroupedTasks>>;
@@ -49,7 +49,7 @@ interface ITaskContext {
   setAppState: Dispatch<SetStateAction<AppState | null>>;
   setCustomTaskSequences: Dispatch<SetStateAction<CustomTaskSequences>>;
   setRefreshTasks: Dispatch<SetStateAction<boolean>>;
-  applyFilters: () => void;
+  setSearchQuery: Dispatch<SetStateAction<string>>;
 }
 
 const TaskManagerContext = createContext<ITaskContext>({
@@ -69,6 +69,7 @@ const TaskManagerContext = createContext<ITaskContext>({
     done: { useSequence: false, sequence: [] },
   },
   refreshTasks: false,
+  searchQuery: "",
   setLoading: () => {},
   setTasks: () => {},
   setGroupedTasks: () => {},
@@ -81,7 +82,7 @@ const TaskManagerContext = createContext<ITaskContext>({
   setAppState: () => {},
   setCustomTaskSequences: () => {},
   setRefreshTasks: () => {},
-  applyFilters: () => {},
+  setSearchQuery: () => {},
 });
 
 const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -94,6 +95,7 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [groupedTasks, setGroupedTasks] = useState<GroupedTasks>(defaultGroupedTasks);
   const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -117,20 +119,22 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const columnSortConfigs = appState?.tasks.sort.columnSortConfigs;
 
-  const { filterState } = useTaskFilterContext();
-  const filterStateQueryRef = useRef(filterState.query);
+  const { appliedFilters } = useTaskFilterContext();
 
-  const applyFilters = useCallback(() => {
+  useEffect(() => {
     let updatedTasks = [...tasks];
-    const { assigneeIds, priorities, dueDateRange } = filterState;
+    const { assigneeIds, priorities, dueDateRange } = appliedFilters;
+
     // Filter by assignee IDs
     if (assigneeIds.length > 0) {
       updatedTasks = updatedTasks.filter((task) => assigneeIds.includes(task.assigneeId));
     }
+
     // Filter by priorities
     if (priorities.length > 0) {
       updatedTasks = updatedTasks.filter((task) => priorities.includes(task.priority));
     }
+
     // Filter by due date range
     if (dueDateRange) {
       const fromDate = dueDateRange.from ? new Date(dueDateRange.from) : null;
@@ -142,28 +146,23 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return true;
       });
     }
-    if (filterState.query.trim() !== "") {
-      const queryLower = filterState.query.toLowerCase();
+
+    // Apply search query filter
+    if (searchQuery.trim() !== "") {
+      const queryLower = searchQuery.toLowerCase();
       updatedTasks = updatedTasks.filter((task) => {
         const titleMatch = task.title.toLowerCase().includes(queryLower);
         const descriptionMatch = task.description.toLowerCase().includes(queryLower);
         const tagsMatch = task.tags.some((tag) => tag.toLowerCase().includes(queryLower));
-        if (filterState.searchBy === "title") return titleMatch;
-        if (filterState.searchBy === "description") return descriptionMatch;
-        if (filterState.searchBy === "tags") return tagsMatch;
+        if (appliedFilters.searchBy === "title") return titleMatch;
+        if (appliedFilters.searchBy === "description") return descriptionMatch;
+        if (appliedFilters.searchBy === "tags") return tagsMatch;
         return titleMatch || descriptionMatch || tagsMatch;
       });
     }
-    setFilteredTasks(updatedTasks);
-  }, [tasks, filterState]);
 
-  useEffect(() => {
-    if (filterState.query !== filterStateQueryRef.current || refreshTasks) {
-      applyFilters();
-    }
-    setRefreshTasks(false);
-    filterStateQueryRef.current = filterState.query;
-  }, [applyFilters, filterState.query, refreshTasks]);
+    setFilteredTasks(updatedTasks);
+  }, [tasks, appliedFilters, searchQuery]);
 
   // Apply custom sequence ordering to tasks
   const applyCustomSequence = useCallback((tasks: Task[], sequence: string[]): Task[] => {
@@ -313,6 +312,7 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
         appState,
         customTaskSequences,
         refreshTasks,
+        searchQuery,
         setLoading,
         setTasks,
         setGroupedTasks,
@@ -325,7 +325,7 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setAppState,
         setCustomTaskSequences,
         setRefreshTasks,
-        applyFilters,
+        setSearchQuery,
       }}
     >
       {children}
