@@ -15,7 +15,7 @@ const filterStateReducer = (state: FilterState, action: FilterAction) => {
       return { ...state, query: action.payload.query };
     case "RESET_FILTERS":
       return {
-        query: "",
+        query: state.query,
         searchBy: "all" as const,
         assigneeIds: [],
         priorities: [],

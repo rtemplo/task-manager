@@ -1,28 +1,15 @@
-import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTaskManagerContext } from "../../contexts/TaskManagerContext";
 import { useTaskFilterContext } from "../../contexts/TaskManagerFilterContext";
 import { useDebounce } from "../../hooks/useDebounce";
 import styles from "./FilterPanel.module.css";
 
-export interface FilterPanelRef {
-  clearSearch: () => void;
-}
-
-export const FilterPanel = forwardRef<FilterPanelRef>((_, ref) => {
+export const FilterPanel = () => {
   const { setModalMode } = useTaskManagerContext();
   const { filterState, setFilterQuery } = useTaskFilterContext();
   const { searchBy } = filterState;
   const [query, setQuery] = useState("");
   const debouncedValue = useDebounce(query, 300);
-
-  useImperativeHandle(ref, () => ({
-    clearSearch: () => {
-      if (query === "") return;
-      setQuery((_prev) => {
-        return "";
-      });
-    },
-  }));
 
   useEffect(() => {
     setFilterQuery(debouncedValue);
@@ -77,4 +64,5 @@ export const FilterPanel = forwardRef<FilterPanelRef>((_, ref) => {
       </div>
     </div>
   );
-});
+  // });
+};

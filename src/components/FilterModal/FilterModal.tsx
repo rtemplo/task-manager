@@ -1,18 +1,12 @@
-import type { RefObject } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FaExclamationCircle } from "react-icons/fa";
 import { RiAddCircleLine, RiCloseCircleLine, RiResetLeftLine } from "react-icons/ri";
 import type { TaskPriority } from "../../common/types";
 import { useTaskManagerContext } from "../../contexts/TaskManagerContext";
 import { useTaskFilterContext } from "../../contexts/TaskManagerFilterContext";
-import type { FilterPanelRef } from "../FilterPanel/FilterPanel";
 import styles from "./FilterModal.module.css";
 
-interface FilterModalProps {
-  filterPanelRef: RefObject<FilterPanelRef | null>;
-}
-
-export const FilterModal: React.FC<FilterModalProps> = ({ filterPanelRef }) => {
+export const FilterModal: React.FC = () => {
   const { users, setModalMode, applyFilters } = useTaskManagerContext();
   const {
     filterState: { searchBy, assigneeIds, priorities, dueDateRange },
@@ -72,8 +66,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({ filterPanelRef }) => {
     setDateError("");
     setUserSearchText("");
     resetFilters();
-    filterPanelRef.current?.clearSearch();
-  }, [resetFilters, filterPanelRef]);
+  }, [resetFilters]);
 
   const handleApplyFilters = useCallback(() => {
     applyFilters();

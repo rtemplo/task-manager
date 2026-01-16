@@ -18,6 +18,7 @@ export const TaskBoard: React.FC = () => {
     setDragTarget,
     setDragCompleted,
     setCustomTaskSequences,
+    setRefreshTasks,
   } = useTaskManagerContext();
 
   // Handle drag over empty column or empty space in column
@@ -66,6 +67,7 @@ export const TaskBoard: React.FC = () => {
           );
         }
         setDragCompleted(true);
+        setRefreshTasks(true);
 
         // Save custom sequences on successful drop
         const updatedSequences = { ...customTaskSequences };
@@ -96,6 +98,7 @@ export const TaskBoard: React.FC = () => {
       setTasks,
       setDragCompleted,
       setCustomTaskSequences,
+      setRefreshTasks,
     ]
   );
 

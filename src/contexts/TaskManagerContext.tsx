@@ -36,6 +36,7 @@ interface ITaskContext {
   dragCompleted?: boolean;
   appState: AppState | null;
   customTaskSequences: CustomTaskSequences;
+  refreshTasks: boolean;
   setLoading: Dispatch<SetStateAction<boolean>>;
   setTasks: Dispatch<SetStateAction<Task[]>>;
   setGroupedTasks: Dispatch<SetStateAction<GroupedTasks>>;
@@ -47,6 +48,7 @@ interface ITaskContext {
   setDragCompleted: Dispatch<SetStateAction<boolean | undefined>>;
   setAppState: Dispatch<SetStateAction<AppState | null>>;
   setCustomTaskSequences: Dispatch<SetStateAction<CustomTaskSequences>>;
+  setRefreshTasks: Dispatch<SetStateAction<boolean>>;
   applyFilters: () => void;
 }
 
@@ -66,6 +68,7 @@ const TaskManagerContext = createContext<ITaskContext>({
     "in-progress": { useSequence: false, sequence: [] },
     done: { useSequence: false, sequence: [] },
   },
+  refreshTasks: false,
   setLoading: () => {},
   setTasks: () => {},
   setGroupedTasks: () => {},
@@ -77,6 +80,7 @@ const TaskManagerContext = createContext<ITaskContext>({
   setDragCompleted: () => {},
   setAppState: () => {},
   setCustomTaskSequences: () => {},
+  setRefreshTasks: () => {},
   applyFilters: () => {},
 });
 
@@ -94,6 +98,7 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [modalMode, setModalMode] = useState<ModalMode | null>(null);
+  const [refreshTasks, setRefreshTasks] = useState(false);
   const [draggedTask, setDraggedTask] = useState<{
     index: number;
     task: Task;
@@ -153,11 +158,12 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [tasks, filterState]);
 
   useEffect(() => {
-    if (filterState.query !== filterStateQueryRef.current) {
+    if (filterState.query !== filterStateQueryRef.current || refreshTasks) {
       applyFilters();
     }
+    setRefreshTasks(false);
     filterStateQueryRef.current = filterState.query;
-  }, [applyFilters, filterState.query]);
+  }, [applyFilters, filterState.query, refreshTasks]);
 
   // Apply custom sequence ordering to tasks
   const applyCustomSequence = useCallback((tasks: Task[], sequence: string[]): Task[] => {
@@ -306,6 +312,7 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
         dragCompleted,
         appState,
         customTaskSequences,
+        refreshTasks,
         setLoading,
         setTasks,
         setGroupedTasks,
@@ -317,6 +324,7 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setDragCompleted,
         setAppState,
         setCustomTaskSequences,
+        setRefreshTasks,
         applyFilters,
       }}
     >
