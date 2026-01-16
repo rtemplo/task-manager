@@ -89,7 +89,8 @@ export type FilterAction =
   | { type: "SET_ASSIGNEE_IDS"; payload: { assigneeIds: string[] } }
   | { type: "SET_PRIORITIES"; payload: { priorities: TaskPriority[] } }
   | { type: "SET_DUE_DATE_RANGE"; payload: { dueDateRange: FilterState["dueDateRange"] } }
-  | { type: "RESET_FILTERS" };
+  | { type: "RESET_FILTER"; payload: { field: keyof FilterState } }
+  | { type: "RESET_ALL_FILTERS" };
 
 export interface AppState {
   userId: string;

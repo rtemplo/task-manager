@@ -19,7 +19,9 @@ const filterStateReducer = (state: FilterState, action: FilterAction) => {
       return { ...state, priorities: action.payload.priorities };
     case "SET_DUE_DATE_RANGE":
       return { ...state, dueDateRange: action.payload.dueDateRange };
-    case "RESET_FILTERS":
+    case "RESET_FILTER":
+      return { ...state, [action.payload.field]: defaultFilterState[action.payload.field] };
+    case "RESET_ALL_FILTERS":
       return {
         searchBy: "all" as const,
         assigneeIds: [],
@@ -39,6 +41,7 @@ interface ITaskFilterContext {
   setPriorities: (priorities: FilterState["priorities"]) => void;
   setDueDateRange: (dueDateRange: FilterState["dueDateRange"]) => void;
   setAppliedFilters: Dispatch<SetStateAction<FilterState>>;
+  resetField: (field: keyof FilterState) => void;
   resetFilters: () => void;
 }
 
@@ -57,6 +60,7 @@ const TaskFilterContext = createContext<ITaskFilterContext>({
   setPriorities: () => {},
   setDueDateRange: () => {},
   setAppliedFilters: () => {},
+  resetField: () => {},
   resetFilters: () => {},
 });
 
@@ -80,8 +84,13 @@ export const TaskFilterProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     dispatch({ type: "SET_DUE_DATE_RANGE", payload: { dueDateRange } });
   }, []);
 
+  const resetField = useCallback((field: keyof FilterState) => {
+    dispatch({ type: "RESET_FILTER", payload: { field } });
+    setAppliedFilters((prev) => ({ ...prev, [field]: defaultFilterState[field] }));
+  }, []);
+
   const resetFilters = useCallback(() => {
-    dispatch({ type: "RESET_FILTERS" });
+    dispatch({ type: "RESET_ALL_FILTERS" });
   }, []);
 
   return (
@@ -94,6 +103,7 @@ export const TaskFilterProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         setPriorities,
         setDueDateRange,
         setAppliedFilters,
+        resetField,
         resetFilters,
       }}
     >

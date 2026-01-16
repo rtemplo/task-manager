@@ -1,8 +1,9 @@
+import { IoClose } from "react-icons/io5";
 import { useTaskFilterContext } from "../../contexts/TaskManagerFilterContext";
 import styles from "./FilterTags.module.css";
 
 export const FilterTags = () => {
-  const { appliedFilters } = useTaskFilterContext();
+  const { appliedFilters, resetField } = useTaskFilterContext();
 
   return (
     <div className={styles.filterTags}>
@@ -27,6 +28,15 @@ export const FilterTags = () => {
           return (
             <span key={key} className={styles.filterTag}>
               {displayValue}
+              <button
+                type="button"
+                className={styles.removeButton}
+                aria-label={`Remove ${key} filter`}
+                title="Remove filter"
+                onClick={() => resetField(key as keyof typeof appliedFilters)}
+              >
+                <IoClose />
+              </button>
             </span>
           );
         })}
