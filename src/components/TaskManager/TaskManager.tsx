@@ -1,6 +1,6 @@
 import { useTaskManagerContext } from "../../contexts/TaskManagerContext";
+import { ControlBar } from "../ControlBar/ControlBar";
 import { FilterModal } from "../FilterModal/FilterModal";
-import { FilterPanel } from "../FilterPanel/FilterPanel";
 import { SortModal } from "../SortModal/SortModal";
 import { Stats } from "../Stats/Stats";
 import { TaskBoard } from "../TaskBoard/TaskBoard";
@@ -10,7 +10,7 @@ import styles from "./TaskManager.module.css";
 
 const TaskManager: React.FC = () => {
   const { loading, error, modalMode, setError } = useTaskManagerContext();
-  // const filterPanelRef = useRef<FilterPanelRef>(null);
+  // const controlBarRef = useRef<ControlBarRef>(null);
 
   return (
     <div className={styles.container}>
@@ -34,7 +34,7 @@ const TaskManager: React.FC = () => {
       {modalMode === "filter" && <FilterModal />}
 
       <TaskManagerHeader />
-      <FilterPanel />
+      <ControlBar />
       <TaskBoard />
       <Stats />
     </div>

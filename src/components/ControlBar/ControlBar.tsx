@@ -3,9 +3,9 @@ import { IoCloseCircle } from "react-icons/io5";
 import { useTaskManagerContext } from "../../contexts/TaskManagerContext";
 import { useTaskFilterContext } from "../../contexts/TaskManagerFilterContext";
 import { useDebounce } from "../../hooks/useDebounce";
-import styles from "./FilterPanel.module.css";
+import styles from "./ControlBar.module.css";
 
-export const FilterPanel = () => {
+export const ControlBar = () => {
   const { setModalMode, setSearchQuery } = useTaskManagerContext();
   const { appliedFilters } = useTaskFilterContext();
   const { searchBy } = appliedFilters;
@@ -19,7 +19,7 @@ export const FilterPanel = () => {
   const searchByText = searchBy === "all" ? "title, description, or tags" : searchBy;
 
   return (
-    <div className={styles.filterPanel}>
+    <div className={styles.controlBar}>
       <div className={styles.filterControls}>
         <div className={styles.searchInputWrapper}>
           <input
