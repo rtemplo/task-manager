@@ -6,8 +6,8 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   cursor: grab;
   transition: all 0.2s;
-  border-left: 4px solid transparent;
   border: 1px solid rgba(128, 128, 128, 0.15);
+  border-left: 4px solid transparent;
 }
 
 .taskCard:hover {
@@ -35,7 +35,9 @@
 
 .taskCard.overdue {
   background: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.3);
+  border-top-color: rgba(239, 68, 68, 0.3);
+  border-right-color: rgba(239, 68, 68, 0.3);
+  border-bottom-color: rgba(239, 68, 68, 0.3);
 }
 
 .taskCard.recentlyUpdated {
