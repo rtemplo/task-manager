@@ -121,6 +121,32 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const { appliedFilters } = useTaskFilterContext();
 
+  // Load initial data
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const [tasksData, usersData, appStateData] = await Promise.all([
+          taskApi.getAll(),
+          userApi.getAll(),
+          appStateApi.get(USER_ID),
+        ]);
+        setTasks(tasksData);
+        setFilteredTasks(tasksData);
+        setUsers(usersData);
+        setAppState(appStateData);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load data");
+        console.error("Error loading data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
   useEffect(() => {
     let updatedTasks = [...tasks];
     const { assigneeIds, priorities, dueDateRange } = appliedFilters;
@@ -270,32 +296,6 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setGroupedTasks(updatedGroupedTasks);
     // }
   }, [filteredTasks, columnSortConfigs, users, sortTasks, customTaskSequences, applyCustomSequence]);
-
-  // Load initial data
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const [tasksData, usersData, appStateData] = await Promise.all([
-          taskApi.getAll(),
-          userApi.getAll(),
-          appStateApi.get(USER_ID),
-        ]);
-        setTasks(tasksData);
-        setFilteredTasks(tasksData);
-        setUsers(usersData);
-        setAppState(appStateData);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load data");
-        console.error("Error loading data:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadData();
-  }, []);
 
   return (
     <TaskManagerContext.Provider
