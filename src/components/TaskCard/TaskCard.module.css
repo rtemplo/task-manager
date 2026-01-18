@@ -69,6 +69,84 @@
   flex: 1;
 }
 
+.menuContainer {
+  position: relative;
+}
+
+.menuButton {
+  background: none;
+  border: none;
+  opacity: 0.6;
+  cursor: pointer;
+  padding: 0.25rem;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.25rem;
+  transition: all 0.2s;
+  outline: none;
+  box-shadow: none;
+}
+
+.menuButton:hover {
+  opacity: 1;
+  background: rgba(128, 128, 128, 0.15);
+}
+
+.menuButton:focus,
+.menuButton:focus-visible {
+  outline: none;
+  border: none;
+  /* box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5); */
+  opacity: 1;
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.25rem;
+  background: var(--menu-bg);
+  border: 1px solid var(--menu-border);
+  color: var(--menu-text);
+  border-radius: 0.375rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  min-width: 140px;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.menuItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-size: 0.875rem;
+  text-align: left;
+}
+
+.menuItem:hover {
+  background: rgba(128, 128, 128, 0.2);
+}
+
+.menuItem svg {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.menuItem span {
+  flex: 1;
+}
+
 .editButton,
 .deleteButton {
   background: none;

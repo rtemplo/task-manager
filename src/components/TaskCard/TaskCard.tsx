@@ -1,5 +1,6 @@
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { FaRegEdit } from "react-icons/fa";
+import { FaEllipsis } from "react-icons/fa6";
 import { TiDeleteOutline } from "react-icons/ti";
 import { taskApi } from "../../api/taskApi";
 import type { Task, TaskStatus } from "../../common/types";
@@ -32,8 +33,24 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
   } = useTaskManagerContext();
   const { setTaskFormData } = useTaskForm();
 
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
   const user = users.find((user) => user.id === task.assigneeId);
   const overdue = task.dueDate < new Date().toISOString() && task.status !== "done";
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    if (isMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isMenuOpen]);
 
   const handleDragStart = useCallback(
     (sourceIndex: number) => {
@@ -148,6 +165,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
       });
 
       setModalMode("edit");
+      setIsMenuOpen(false);
     },
     [tasks, setModalMode, setTaskFormData]
   );
@@ -158,6 +176,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
         try {
           await taskApi.delete(taskId);
           setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+          setIsMenuOpen(false);
         } catch (err) {
           console.error("Error deleting task:", err);
           setError(err instanceof Error ? err.message : "Failed to delete task");
@@ -185,25 +204,33 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
       tabIndex={0}
     >
       <div className={styles.taskHeader}>
-        <button
-          type="button"
-          title="Edit task"
-          className={styles.editButton}
-          onClick={() => editTask(task.id)}
-          aria-label="Edit task"
-        >
-          <FaRegEdit />
-        </button>
         <h3 className={styles.taskTitle}>{task.title}</h3>
-        <button
-          type="button"
-          title="Delete task"
-          className={styles.deleteButton}
-          onClick={() => deleteTask(task.id)}
-          aria-label="Delete task"
-        >
-          <TiDeleteOutline size={21} />
-        </button>
+        <div className={styles.menuContainer} ref={menuRef}>
+          <button
+            type="button"
+            title="More options"
+            className={styles.menuButton}
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsMenuOpen(!isMenuOpen);
+            }}
+            aria-label="More options"
+          >
+            <FaEllipsis />
+          </button>
+          {isMenuOpen && (
+            <div className={styles.dropdownMenu}>
+              <button type="button" className={styles.menuItem} onClick={() => editTask(task.id)}>
+                <FaRegEdit />
+                <span>Edit</span>
+              </button>
+              <button type="button" className={styles.menuItem} onClick={() => deleteTask(task.id)}>
+                <TiDeleteOutline size={18} />
+                <span>Delete</span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
       <p className={styles.taskDescription}>{task.description}</p>
       <div className={styles.taskTags}>

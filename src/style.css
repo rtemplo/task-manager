@@ -12,6 +12,11 @@
   --modal-border: rgba(128, 128, 128, 0.5);
   --modal-text: rgba(255, 255, 255, 0.87);
 
+  /* Popup Menu variables */
+  --menu-bg: rgb(48, 47, 47);
+  --menu-border: rgba(128, 128, 128, 0.5);
+  --menu-text: rgba(255, 255, 255, 0.87);
+
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -67,6 +72,11 @@ button:hover {
     --modal-bg: #ffffff;
     --modal-border: rgba(128, 128, 128, 0.3);
     --modal-text: #213547;
+
+    /* Popup Menu variables for light mode */
+    --menu-bg: #ffffff;
+    --menu-border: rgba(128, 128, 128, 0.3);
+    --menu-text: #213547;
   }
   a:hover {
     color: #747bff;
