@@ -107,7 +107,7 @@ export const FilterModal: React.FC = () => {
       />
       <form className={`modal ${styles.filterModal}`} noValidate>
         <div className="header">
-          <span className="title">Filter Options</span>
+          <span className="title">Search & Filter Options</span>
           <button
             type="button"
             title="close filter options modal"

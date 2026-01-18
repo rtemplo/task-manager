@@ -189,7 +189,7 @@ export const SortModal: React.FC = () => {
       <div className="modalBackdrop" role="button" tabIndex={0} aria-label="Close modal" />
       <div className={`modal ${styles.sortModal}`}>
         <div className="header">
-          <span className="title">Set Sort Options</span>
+          <span className="title">Sort Options</span>
           <button
             type="button"
             title="close"
