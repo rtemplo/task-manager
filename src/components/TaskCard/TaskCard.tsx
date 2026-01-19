@@ -65,6 +65,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
       e.stopPropagation();
 
       if (!draggedTask) return;
+      if (draggedTask.task.id === task.id) return;
 
       let updatedGroupedTasks = { ...groupedTasks };
 
@@ -89,7 +90,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
       setGroupedTasks(updatedGroupedTasks);
       setDragTarget({ index: targetIndex, status: targetStatus });
     },
-    [draggedTask, groupedTasks, setDragTarget, index, task.status, setGroupedTasks]
+    [draggedTask, groupedTasks, setDragTarget, index, task.status, setGroupedTasks, task.id]
   );
 
   const handleDragEnd = useCallback(() => {
