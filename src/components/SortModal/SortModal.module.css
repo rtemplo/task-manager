@@ -8,9 +8,9 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 1rem;
-  background: rgba(0, 0, 0, 0.1);
-  border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+  padding: 0.5rem;
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  border-radius: 0.5rem;
   gap: 1rem;
 }
 
@@ -82,7 +82,8 @@
   flex-direction: column;
   gap: 0.25rem;
   padding: 0.5rem;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--scheme-bg);
+  border: 1px solid var(--scheme-border);
   border-radius: 0.5rem;
   min-height: 150px;
 }
@@ -149,6 +150,7 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
+  color: var(--scheme-text);
 }
 
 .addFieldsBtn {
@@ -162,7 +164,7 @@
 
 .addFieldsBtn:disabled {
   background: rgba(128, 128, 128, 0.2);
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--scheme-text-disabled);
   cursor: not-allowed;
 }
 

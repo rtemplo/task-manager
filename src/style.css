@@ -7,15 +7,11 @@
   color: rgba(255, 255, 255, 0.87);
   background-color: #242424;
 
-  /* Modal theme variables */
-  --modal-bg: rgb(48, 47, 47);
-  --modal-border: rgba(128, 128, 128, 0.5);
-  --modal-text: rgba(255, 255, 255, 0.87);
-
-  /* Popup Menu variables */
-  --menu-bg: rgb(48, 47, 47);
-  --menu-border: rgba(128, 128, 128, 0.5);
-  --menu-text: rgba(255, 255, 255, 0.87);
+  /* Scheme variables values for dark mode */
+  --scheme-bg: rgb(48, 47, 47);
+  --scheme-border: rgba(128, 128, 128, 0.5);
+  --scheme-text: rgba(255, 255, 255, 0.87);
+  --scheme-text-disabled: rgba(255, 255, 255, 0.2);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -68,15 +64,11 @@ button:hover {
     color: #213547;
     background-color: #ffffff;
 
-    /* Modal theme variables for light mode */
-    --modal-bg: #ffffff;
-    --modal-border: rgba(128, 128, 128, 0.3);
-    --modal-text: #213547;
-
-    /* Popup Menu variables for light mode */
-    --menu-bg: #ffffff;
-    --menu-border: rgba(128, 128, 128, 0.3);
-    --menu-text: #213547;
+    /* Scheme variable values for light mode */
+    --scheme-bg: #ffffff;
+    --scheme-border: rgba(128, 128, 128, 0.35);
+    --scheme-text: #213547;
+    --scheme-text-disabled: rgba(0, 0, 0, 0.35);
   }
   a:hover {
     color: #747bff;
@@ -131,9 +123,9 @@ select {
   left: 50%;
   transform: translate(-50%, -50%);
   box-sizing: border-box;
-  border: 2px solid var(--modal-border);
-  background: var(--modal-bg);
-  color: var(--modal-text);
+  border: 2px solid var(--scheme-border);
+  background: var(--scheme-bg);
+  color: var(--scheme-text);
   border-radius: 0.75rem;
   z-index: 1000;
   padding: 1rem;

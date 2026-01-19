@@ -93,7 +93,8 @@
   flex-direction: column;
   gap: 0.25rem;
   padding: 0.5rem;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--scheme-bg);
+  border: 1px solid var(--scheme-border);
   border-radius: 0.5rem;
   min-height: 150px;
 }
