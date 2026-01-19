@@ -117,17 +117,18 @@ export const TaskModal: React.FC = () => {
             <label htmlFor="priority" className="controlLabel">
               Priority
             </label>
-            <select
-              id="priority"
-              className="control"
-              style={{ width: "120px" }}
-              value={taskFormData.priority}
-              onChange={updateFormData}
-            >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-            </select>
+            <div className="selectWrapper" style={{ width: "120px" }}>
+              <select
+                id="priority"
+                className="control"
+                value={taskFormData.priority}
+                onChange={updateFormData}
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
 
             <label htmlFor="assigneeId" className="controlLabel">
               Assignee
@@ -176,21 +177,17 @@ export const TaskModal: React.FC = () => {
             <label htmlFor="status" className="controlLabel">
               Status
             </label>
-            <select
-              id="status"
-              className="control"
-              style={{ width: "120px" }}
-              value={taskFormData.status}
-              onChange={updateFormData}
-            >
-              <option value="todo">To Do</option>
-              <option value="in-progress" disabled={modalMode === "add"}>
-                In Progress
-              </option>
-              <option value="done" disabled={modalMode === "add"}>
-                Done
-              </option>
-            </select>
+            <div className="selectWrapper" style={{ width: "135px" }}>
+              <select id="status" className="control" value={taskFormData.status} onChange={updateFormData}>
+                <option value="todo">To Do</option>
+                <option value="in-progress" disabled={modalMode === "add"}>
+                  In Progress
+                </option>
+                <option value="done" disabled={modalMode === "add"}>
+                  Done
+                </option>
+              </select>
+            </div>
           </div>
         </div>
         <div className="footer">
