@@ -3,6 +3,7 @@ import { RiCloseCircleLine } from "react-icons/ri";
 import { appStateApi } from "../../api/taskApi";
 import type { SortField, SortOption, TaskStatus } from "../../common/types";
 import { useTaskManagerContext } from "../../contexts/TaskManagerContext";
+import { useEscapeKey } from "../../hooks/useEscapeKey";
 import styles from "./SortModal.module.css";
 
 export const SortModal: React.FC = () => {
@@ -172,16 +173,7 @@ export const SortModal: React.FC = () => {
     customTaskSequences,
   ]);
 
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        closeSortModal();
-      }
-    };
-
-    document.addEventListener("keydown", handleEscape);
-    return () => document.removeEventListener("keydown", handleEscape);
-  }, [closeSortModal]);
+  useEscapeKey(closeSortModal);
 
   return (
     <>

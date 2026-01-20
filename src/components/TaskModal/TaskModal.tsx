@@ -1,9 +1,10 @@
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { FaExclamationCircle } from "react-icons/fa";
 import { RiCloseCircleLine } from "react-icons/ri";
 import { taskApi } from "../../api/taskApi";
 import { useTaskForm } from "../../contexts/TaskFormContext";
 import { useTaskManagerContext } from "../../contexts/TaskManagerContext";
+import { useEscapeKey } from "../../hooks/useEscapeKey";
 import styles from "./TaskModal.module.css";
 
 export const TaskModal: React.FC = () => {
@@ -26,18 +27,7 @@ export const TaskModal: React.FC = () => {
   }, [resetFormData, setModalMode]);
 
   // Handle Escape key to close modal
-  useEffect(() => {
-    if (!modalMode) return;
-
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        closeAddNewTaskModal();
-      }
-    };
-
-    document.addEventListener("keydown", handleEscape);
-    return () => document.removeEventListener("keydown", handleEscape);
-  }, [modalMode, closeAddNewTaskModal]);
+  useEscapeKey(closeAddNewTaskModal, Boolean(modalMode));
 
   const renderErrorIcon = (errorMessage?: string) => {
     if (!errorMessage?.trim()) return null;

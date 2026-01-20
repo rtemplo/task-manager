@@ -4,6 +4,7 @@ import { RiAddCircleLine, RiCloseCircleLine, RiResetLeftLine } from "react-icons
 import type { TaskPriority } from "../../common/types";
 import { useTaskManagerContext } from "../../contexts/TaskManagerContext";
 import { useTaskFilterContext } from "../../contexts/TaskManagerFilterContext";
+import { useEscapeKey } from "../../hooks/useEscapeKey";
 import styles from "./FilterModal.module.css";
 
 export const FilterModal: React.FC = () => {
@@ -75,16 +76,7 @@ export const FilterModal: React.FC = () => {
     closeFilterModal();
   }, [filterState, setAppliedFilters, closeFilterModal]);
 
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        closeFilterModal();
-      }
-    };
-
-    document.addEventListener("keydown", handleEscape);
-    return () => document.removeEventListener("keydown", handleEscape);
-  }, [closeFilterModal]);
+  useEscapeKey(closeFilterModal);
 
   const availableUsers = useMemo(() => {
     return users.filter(
