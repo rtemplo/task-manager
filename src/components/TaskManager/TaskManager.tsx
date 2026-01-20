@@ -25,7 +25,10 @@ const TaskManager: React.FC = () => {
     <div className={styles.container} onDragEnd={handleDragEnd} onDrop={handleDragDrop}>
       {loading && (
         <div className={styles.loadingOverlay}>
-          <div className={styles.spinner}>Loading...</div>
+          <div className={styles.spinnerContainer}>
+            <div className={styles.spinner}></div>
+            <p className={styles.loadingText}>Loading...</p>
+          </div>
         </div>
       )}
 
