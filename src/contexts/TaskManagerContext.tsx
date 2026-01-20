@@ -19,6 +19,7 @@ import type {
   User,
 } from "../common/types";
 import { useLocalStorage } from "../hooks/useLocalStorage";
+import { useTaskFiltering } from "../hooks/useTaskFiltering";
 import { useTaskFilterContext } from "./TaskManagerFilterContext";
 
 const USER_ID = "default-user"; // TODO: Replace with actual user auth
@@ -90,7 +91,6 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [groupedTasks, setGroupedTasks] = useState<GroupedTasks>(defaultGroupedTasks);
   const [users, setUsers] = useState<User[]>([]);
@@ -128,7 +128,6 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
           appStateApi.get(USER_ID),
         ]);
         setTasks(tasksData);
-        setFilteredTasks(tasksData);
         setUsers(usersData);
         setAppState(appStateData);
       } catch (err) {
@@ -142,48 +141,7 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loadData();
   }, []);
 
-  useEffect(() => {
-    let updatedTasks = [...tasks];
-    const { assigneeIds, priorities, dueDateRange } = appliedFilters;
-
-    // Filter by assignee IDs
-    if (assigneeIds.length > 0) {
-      updatedTasks = updatedTasks.filter((task) => assigneeIds.includes(task.assigneeId));
-    }
-
-    // Filter by priorities
-    if (priorities.length > 0) {
-      updatedTasks = updatedTasks.filter((task) => priorities.includes(task.priority));
-    }
-
-    // Filter by due date range
-    if (dueDateRange) {
-      const fromDate = dueDateRange.from ? new Date(dueDateRange.from) : null;
-      const toDate = dueDateRange.to ? new Date(dueDateRange.to) : null;
-      updatedTasks = updatedTasks.filter((task) => {
-        const taskDueDate = new Date(task.dueDate);
-        if (fromDate && taskDueDate < fromDate) return false;
-        if (toDate && taskDueDate > toDate) return false;
-        return true;
-      });
-    }
-
-    // Apply search query filter
-    if (searchQuery.trim() !== "") {
-      const queryLower = searchQuery.toLowerCase();
-      updatedTasks = updatedTasks.filter((task) => {
-        const titleMatch = task.title.toLowerCase().includes(queryLower);
-        const descriptionMatch = task.description.toLowerCase().includes(queryLower);
-        const tagsMatch = task.tags.some((tag) => tag.toLowerCase().includes(queryLower));
-        if (appliedFilters.searchBy === "title") return titleMatch;
-        if (appliedFilters.searchBy === "description") return descriptionMatch;
-        if (appliedFilters.searchBy === "tags") return tagsMatch;
-        return titleMatch || descriptionMatch || tagsMatch;
-      });
-    }
-
-    setFilteredTasks(updatedTasks);
-  }, [tasks, appliedFilters, searchQuery]);
+  const filteredTasks = useTaskFiltering(tasks, appliedFilters, searchQuery);
 
   // Apply custom sequence ordering to tasks
   const applyCustomSequence = useCallback((tasks: Task[], sequence: string[]): Task[] => {
