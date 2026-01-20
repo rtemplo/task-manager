@@ -19,17 +19,12 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
     tasks,
     groupedTasks,
     draggedTask,
-    dragTarget,
-    dragCompleted,
-    customTaskSequences,
     setModalMode,
     setTasks,
     setGroupedTasks,
     setError,
     setDraggedTask,
     setDragTarget,
-    setDragCompleted,
-    setCustomTaskSequences,
   } = useTaskManagerContext();
   const { setTaskFormData } = useTaskForm();
 
@@ -65,7 +60,13 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
       e.stopPropagation();
 
       if (!draggedTask) return;
-      if (draggedTask.task.id === task.id) return;
+
+      const sourceId = draggedTask.task.id;
+      const targetId = task.id;
+      const targetStatus = task.status;
+      const targetIndex = index;
+
+      if (sourceId === targetId) return;
 
       let updatedGroupedTasks = { ...groupedTasks };
 
@@ -73,13 +74,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
       for (const status of ["todo", "in-progress", "done"] as TaskStatus[]) {
         updatedGroupedTasks[status] = updatedGroupedTasks[status].filter((t) => t.id !== draggedTask.task.id);
       }
-
-      const sourceIndex = draggedTask.index;
-      const sourceStatus = draggedTask.task.status;
-      const targetStatus = task.status;
-      const targetIndex = index;
-
-      if (sourceStatus === targetStatus && sourceIndex === targetIndex) return;
 
       const updatedGroupTasks = [...updatedGroupedTasks[targetStatus]];
 
@@ -92,62 +86,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
     },
     [draggedTask, groupedTasks, setDragTarget, index, task.status, setGroupedTasks, task.id]
   );
-
-  const handleDragEnd = useCallback(() => {
-    if (!draggedTask || !dragTarget) return;
-
-    const sourceStatus = draggedTask.task.status;
-    const sourceIndex = draggedTask.index;
-    const targetStatus = dragTarget.status;
-    const targetIndex = dragTarget.index ?? groupedTasks[targetStatus].length - 1;
-
-    if (dragCompleted === false) {
-      const updatedGroupedTasks = { ...groupedTasks };
-      // Revert the optimistic update
-      if (sourceStatus !== targetStatus) {
-        // Remove from target
-        updatedGroupedTasks[targetStatus].splice(targetIndex, 1);
-        // Re-insert into source
-        updatedGroupedTasks[sourceStatus].splice(sourceIndex, 0, draggedTask.task);
-        updatedGroupedTasks[sourceStatus][sourceIndex].status = sourceStatus;
-      } else {
-        updatedGroupedTasks[sourceStatus].splice(targetIndex, 1);
-        updatedGroupedTasks[sourceStatus].splice(sourceIndex, 0, draggedTask.task);
-      }
-
-      setGroupedTasks(updatedGroupedTasks);
-    } else if (dragCompleted === true) {
-      // Save custom sequences on successful drop
-      const updatedSequences = { ...customTaskSequences };
-      updatedSequences[targetStatus] = {
-        useSequence: true,
-        sequence: groupedTasks[targetStatus].map((t) => t.id),
-      };
-      // If cross-column, also update source column
-      if (sourceStatus !== targetStatus) {
-        updatedSequences[sourceStatus] = {
-          useSequence: true,
-          sequence: groupedTasks[sourceStatus].map((t) => t.id),
-        };
-      }
-      setCustomTaskSequences(updatedSequences);
-    }
-
-    setDraggedTask(null);
-    setDragTarget(null);
-    setDragCompleted(undefined);
-  }, [
-    draggedTask,
-    dragTarget,
-    groupedTasks,
-    dragCompleted,
-    customTaskSequences,
-    setDraggedTask,
-    setDragTarget,
-    setDragCompleted,
-    setGroupedTasks,
-    setCustomTaskSequences,
-  ]);
 
   const editTask = useCallback(
     (taskId: string) => {
@@ -200,7 +138,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
       draggable
       onDragStart={() => handleDragStart(index)}
       onDragOver={handleDragOver}
-      onDragEnd={handleDragEnd}
       role="button"
       tabIndex={0}
     >

@@ -12,8 +12,17 @@ const TaskManager: React.FC = () => {
   const { loading, error, modalMode, setError } = useTaskManagerContext();
   // const controlBarRef = useRef<ControlBarRef>(null);
 
+  const handleDragEnd = () => {
+    console.log("Drag ended at TaskManager level");
+  };
+
+  const handleDragDrop = () => {
+    console.log("Drag dropped at TaskManager level");
+  };
+
   return (
-    <div className={styles.container}>
+    // biome-ignore lint/a11y/noStaticElementInteractions: Static Elements should not be interactive.
+    <div className={styles.container} onDragEnd={handleDragEnd} onDrop={handleDragDrop}>
       {loading && (
         <div className={styles.loadingOverlay}>
           <div className={styles.spinner}>Loading...</div>

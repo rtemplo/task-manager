@@ -22,7 +22,6 @@ export const TaskColumn: React.FC<TaskColumnProps> = memo(({ status, title, task
     setTasks,
     setGroupedTasks,
     setDragTarget,
-    setDragCompleted,
     setCustomTaskSequences,
     setRefreshTasks,
   } = useTaskManagerContext();
@@ -34,7 +33,6 @@ export const TaskColumn: React.FC<TaskColumnProps> = memo(({ status, title, task
       e.stopPropagation();
 
       if (!draggedTask) return;
-
       if (dragTarget && dragTarget.status === status) return;
 
       const updatedGroupedTasks = { ...groupedTasks };
@@ -57,11 +55,9 @@ export const TaskColumn: React.FC<TaskColumnProps> = memo(({ status, title, task
   const handleColumnDrop = useCallback(
     async (e: React.DragEvent) => {
       e.preventDefault();
+      e.stopPropagation();
 
-      if (!draggedTask || !dragTarget) {
-        setDragCompleted(false);
-        return;
-      }
+      if (!draggedTask || !dragTarget) return;
 
       const sourceStatus = draggedTask.task.status;
 
@@ -74,7 +70,7 @@ export const TaskColumn: React.FC<TaskColumnProps> = memo(({ status, title, task
             prevTasks.map((t) => (t.id === draggedTask.task.id ? { ...t, status } : t))
           );
         }
-        setDragCompleted(true);
+
         setRefreshTasks(true);
 
         // Save custom sequences on successful drop
@@ -92,7 +88,6 @@ export const TaskColumn: React.FC<TaskColumnProps> = memo(({ status, title, task
         }
         setCustomTaskSequences(updatedSequences);
       } catch (err) {
-        setDragCompleted(false);
         console.error("Error updating task status:", err);
         setError(err instanceof Error ? err.message : "Failed to update task");
       }
@@ -105,7 +100,6 @@ export const TaskColumn: React.FC<TaskColumnProps> = memo(({ status, title, task
       customTaskSequences,
       setError,
       setTasks,
-      setDragCompleted,
       setCustomTaskSequences,
       setRefreshTasks,
     ]

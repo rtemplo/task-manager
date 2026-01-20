@@ -32,7 +32,6 @@ interface ITaskContext {
   modalMode: ModalMode | null;
   draggedTask?: { index: number; task: Task } | null;
   dragTarget?: { index?: number; status: TaskStatus } | null;
-  dragCompleted?: boolean;
   appState: AppState | null;
   customTaskSequences: CustomTaskSequences;
   refreshTasks: boolean;
@@ -45,7 +44,6 @@ interface ITaskContext {
   setModalMode: Dispatch<SetStateAction<ModalMode | null>>;
   setDraggedTask: Dispatch<SetStateAction<{ index: number; task: Task } | null>>;
   setDragTarget: Dispatch<SetStateAction<{ index?: number; status: TaskStatus } | null>>;
-  setDragCompleted: Dispatch<SetStateAction<boolean | undefined>>;
   setAppState: Dispatch<SetStateAction<AppState | null>>;
   setCustomTaskSequences: Dispatch<SetStateAction<CustomTaskSequences>>;
   setRefreshTasks: Dispatch<SetStateAction<boolean>>;
@@ -61,7 +59,6 @@ const TaskManagerContext = createContext<ITaskContext>({
   modalMode: null,
   draggedTask: null,
   dragTarget: null,
-  dragCompleted: undefined,
   appState: null,
   customTaskSequences: {
     todo: { useSequence: false, sequence: [] },
@@ -78,7 +75,6 @@ const TaskManagerContext = createContext<ITaskContext>({
   setModalMode: () => {},
   setDraggedTask: () => {},
   setDragTarget: () => {},
-  setDragCompleted: () => {},
   setAppState: () => {},
   setCustomTaskSequences: () => {},
   setRefreshTasks: () => {},
@@ -106,7 +102,6 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
     task: Task;
   } | null>(null);
   const [dragTarget, setDragTarget] = useState<{ index?: number; status: TaskStatus } | null>(null);
-  const [dragCompleted, setDragCompleted] = useState<boolean | undefined>(undefined);
   const [appState, setAppState] = useState<AppState | null>(null);
   const [customTaskSequences, setCustomTaskSequences] = useLocalStorage<CustomTaskSequences>(
     "task-manager-custom-sequences",
@@ -308,7 +303,6 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
         modalMode,
         draggedTask,
         dragTarget,
-        dragCompleted,
         appState,
         customTaskSequences,
         refreshTasks,
@@ -321,7 +315,6 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setModalMode,
         setDraggedTask,
         setDragTarget,
-        setDragCompleted,
         setAppState,
         setCustomTaskSequences,
         setRefreshTasks,
