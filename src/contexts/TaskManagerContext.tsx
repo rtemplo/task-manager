@@ -213,7 +213,6 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
      * This useEffect updates groupedTasks and applies sorting based on any existing custom
      * configurations made through the sorting modal panel or custom drag-and-drop sequences.
      */
-    // if (filteredTasks.length > 0) {
     const updatedGroupedTasks = Object.groupBy(filteredTasks, (task) => task.status) as Record<
       TaskStatus,
       Task[]
@@ -247,7 +246,6 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     setGroupedTasks(updatedGroupedTasks);
-    // }
   }, [filteredTasks, columnSortConfigs, users, sortTasks, customTaskSequences, applyCustomSequence]);
 
   return (
