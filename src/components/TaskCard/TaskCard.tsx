@@ -3,9 +3,10 @@ import { FaRegEdit } from "react-icons/fa";
 import { FaEllipsis } from "react-icons/fa6";
 import { TiDeleteOutline } from "react-icons/ti";
 import { taskApi } from "../../api/taskApi";
-import type { Task, TaskStatus } from "../../common/types";
+import type { Task } from "../../common/types";
 import { useTaskForm } from "../../contexts/TaskFormContext";
 import { useTaskManagerContext } from "../../contexts/TaskManagerContext";
+import { useDragAndDrop } from "../../hooks/useDragAndDrop";
 import styles from "./TaskCard.module.css";
 
 interface TaskCardProps {
@@ -14,19 +15,13 @@ interface TaskCardProps {
 }
 
 export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
-  const {
-    users,
-    tasks,
-    groupedTasks,
-    draggedTask,
-    setModalMode,
-    setTasks,
-    setGroupedTasks,
-    setError,
-    setDraggedTask,
-    setDragTarget,
-  } = useTaskManagerContext();
+  const { users, tasks, setModalMode, setTasks, setError } = useTaskManagerContext();
   const { setTaskFormData } = useTaskForm();
+  const { handleCardDragStart, handleCardDragOver } = useDragAndDrop({
+    task,
+    index,
+    status: task.status,
+  });
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -46,46 +41,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
       return () => document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [isMenuOpen]);
-
-  const handleDragStart = useCallback(
-    (sourceIndex: number) => {
-      setDraggedTask({ index: sourceIndex, task });
-    },
-    [task, setDraggedTask]
-  );
-
-  const handleDragOver = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      if (!draggedTask) return;
-
-      const sourceId = draggedTask.task.id;
-      const targetId = task.id;
-      const targetStatus = task.status;
-      const targetIndex = index;
-
-      if (sourceId === targetId) return;
-
-      let updatedGroupedTasks = { ...groupedTasks };
-
-      // Remove from all columns to prevent duplication
-      for (const status of ["todo", "in-progress", "done"] as TaskStatus[]) {
-        updatedGroupedTasks[status] = updatedGroupedTasks[status].filter((t) => t.id !== draggedTask.task.id);
-      }
-
-      const updatedGroupTasks = [...updatedGroupedTasks[targetStatus]];
-
-      updatedGroupTasks.splice(targetIndex, 0, draggedTask.task);
-      updatedGroupTasks[targetIndex] = { ...updatedGroupTasks[targetIndex], status: targetStatus };
-      updatedGroupedTasks = { ...updatedGroupedTasks, [targetStatus]: updatedGroupTasks };
-
-      setGroupedTasks(updatedGroupedTasks);
-      setDragTarget({ index: targetIndex, status: targetStatus });
-    },
-    [draggedTask, groupedTasks, setDragTarget, index, task.status, setGroupedTasks, task.id]
-  );
 
   const editTask = useCallback(
     (taskId: string) => {
@@ -136,8 +91,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
       key={task.id}
       className={`${styles.taskCard} ${styles[`priority-${task.priority}`]} ${overdue ? styles.overdue : ""}`}
       draggable
-      onDragStart={() => handleDragStart(index)}
-      onDragOver={handleDragOver}
+      onDragStart={() => handleCardDragStart(index)}
+      onDragOver={handleCardDragOver}
       role="button"
       tabIndex={0}
     >
