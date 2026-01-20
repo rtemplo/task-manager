@@ -1,25 +1,17 @@
-import {
-  createContext,
-  type Dispatch,
-  type SetStateAction,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, type Dispatch, type SetStateAction, useContext, useEffect, useState } from "react";
 import { appStateApi, taskApi, userApi } from "../api/taskApi";
 import type {
   AppState,
   CustomTaskSequences,
   GroupedTasks,
   ModalMode,
-  SortOption,
   Task,
   TaskStatus,
   User,
 } from "../common/types";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { useTaskFiltering } from "../hooks/useTaskFiltering";
+import { useTaskSorting } from "../hooks/useTaskSorting";
 import { useTaskFilterContext } from "./TaskManagerFilterContext";
 
 const USER_ID = "default-user"; // TODO: Replace with actual user auth
@@ -113,7 +105,6 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 
   const columnSortConfigs = appState?.tasks.sort.columnSortConfigs;
-
   const { appliedFilters } = useTaskFilterContext();
 
   // Load initial data
@@ -142,111 +133,12 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const filteredTasks = useTaskFiltering(tasks, appliedFilters, searchQuery);
+  const sortedGroupedTasks = useTaskSorting(filteredTasks, users, customTaskSequences, columnSortConfigs);
 
-  // Apply custom sequence ordering to tasks
-  const applyCustomSequence = useCallback((tasks: Task[], sequence: string[]): Task[] => {
-    const taskMap = new Map(tasks.map((t) => [t.id, t]));
-    const ordered: Task[] = [];
-
-    // Add tasks in sequence order
-    for (const id of sequence) {
-      const task = taskMap.get(id);
-      if (task) {
-        ordered.push(task);
-        taskMap.delete(id);
-      }
-    }
-
-    // Append new tasks not in sequence to the bottom
-    for (const task of taskMap.values()) {
-      ordered.push(task);
-    }
-
-    return ordered;
-  }, []);
-
-  // Sort tasks based on SortOption configuration
-  const sortTasks = useCallback(
-    (tasksToSort: Task[], sortOptions: SortOption[], usersMap: Map<string, User>): Task[] => {
-      if (!sortOptions || sortOptions.length === 0) {
-        return tasksToSort;
-      }
-
-      const sorted = [...tasksToSort];
-
-      sorted.sort((a, b) => {
-        for (const option of sortOptions) {
-          let comparison = 0;
-
-          switch (option.field) {
-            case "dueDate":
-              comparison = new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
-              break;
-            case "priority": {
-              const priorityOrder = { high: 3, medium: 2, low: 1 };
-              comparison = priorityOrder[a.priority] - priorityOrder[b.priority];
-              break;
-            }
-            case "assignee": {
-              const assigneeA = usersMap.get(a.assigneeId)?.name || "";
-              const assigneeB = usersMap.get(b.assigneeId)?.name || "";
-              comparison = assigneeA.localeCompare(assigneeB);
-              break;
-            }
-          }
-
-          if (comparison !== 0) {
-            return option.direction === "ascending" ? comparison : -comparison;
-          }
-        }
-
-        return 0;
-      });
-
-      return sorted;
-    },
-    []
-  );
-
+  // Sync the memoized grouped tasks with local state for drag-and-drop updates
   useEffect(() => {
-    /**
-     * This useEffect updates groupedTasks and applies sorting based on any existing custom
-     * configurations made through the sorting modal panel or custom drag-and-drop sequences.
-     */
-    const updatedGroupedTasks = Object.groupBy(filteredTasks, (task) => task.status) as Record<
-      TaskStatus,
-      Task[]
-    >;
-
-    for (const status of ["todo", "in-progress", "done"] as TaskStatus[]) {
-      if (!updatedGroupedTasks[status]) {
-        updatedGroupedTasks[status] = [];
-      }
-    }
-
-    // Create users map for efficient lookup
-    const usersMap = new Map(users.map((u) => [u.id, u]));
-
-    // Apply custom sequence or sort configuration for each column
-    for (const status of ["todo", "in-progress", "done"] as TaskStatus[]) {
-      if (customTaskSequences[status].useSequence) {
-        // Custom drag-and-drop order takes precedence
-        updatedGroupedTasks[status] = applyCustomSequence(
-          updatedGroupedTasks[status],
-          customTaskSequences[status].sequence
-        );
-      } else if (columnSortConfigs?.[status] && columnSortConfigs[status].length > 0) {
-        // Apply sort modal configuration if no custom sequence
-        updatedGroupedTasks[status] = sortTasks(
-          updatedGroupedTasks[status],
-          columnSortConfigs[status],
-          usersMap
-        );
-      }
-    }
-
-    setGroupedTasks(updatedGroupedTasks);
-  }, [filteredTasks, columnSortConfigs, users, sortTasks, customTaskSequences, applyCustomSequence]);
+    setGroupedTasks(sortedGroupedTasks);
+  }, [sortedGroupedTasks]);
 
   return (
     <TaskManagerContext.Provider
