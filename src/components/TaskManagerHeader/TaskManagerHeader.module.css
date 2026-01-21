@@ -17,6 +17,31 @@
   align-items: center;
 }
 
+.resetButton {
+  padding: 0.75rem;
+  background: rgba(128, 128, 128, 0.15);
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.resetButton:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.5);
+  /* transform: rotate(-15deg); */
+}
+
+.resetButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .addButton {
   padding: 0.75rem 1.5rem;
   background: #3b82f6;

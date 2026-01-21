@@ -137,4 +137,17 @@ export const appStateApi = {
   },
 };
 
+// Seed API
+export const seedApi = {
+  async resetDemo(): Promise<{ message: string; usersInserted: number; tasksInserted: number }> {
+    const response = await fetch(`${API_BASE_URL}/seed`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    return handleResponse<{ message: string; usersInserted: number; tasksInserted: number }>(response);
+  },
+};
+
 export { ApiError };

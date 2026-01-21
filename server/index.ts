@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import express, { type Request, type Response } from "express";
 import mongoose from "mongoose";
 import appStateRoutes from "./routes/appState.js";
+import seedRoutes from "./routes/seed.js";
 import taskRoutes from "./routes/tasks.js";
 import userRoutes from "./routes/users.js";
 
@@ -20,6 +21,7 @@ app.use(express.json());
 app.use("/api/tasks", taskRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/app-state", appStateRoutes);
+app.use("/api/seed", seedRoutes);
 
 // Health check
 app.get("/api/health", (_req: Request, res: Response) => {
