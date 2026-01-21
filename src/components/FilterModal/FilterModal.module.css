@@ -19,6 +19,10 @@
   border-radius: 0.5rem;
 }
 
+.flexGrow {
+  flex: 1;
+}
+
 .columnCheckboxes {
   display: flex;
   align-items: center;

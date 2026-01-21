@@ -9,6 +9,7 @@ import type {
   TaskStatus,
   User,
 } from "../common/types";
+import { useBookmarkSanitizer } from "../hooks/useBookmarkSanitizer";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { useTaskFiltering } from "../hooks/useTaskFiltering";
 import { useTaskSorting } from "../hooks/useTaskSorting";
@@ -132,13 +133,16 @@ const TaskManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loadData();
   }, []);
 
-  const filteredTasks = useTaskFiltering(tasks, appliedFilters, searchQuery);
+  const filteredTasks = useTaskFiltering(tasks, appliedFilters, searchQuery, appState?.tasks.bookmarks ?? []);
   const sortedGroupedTasks = useTaskSorting(filteredTasks, users, customTaskSequences, columnSortConfigs);
 
   // Sync the memoized grouped tasks with local state for drag-and-drop updates
   useEffect(() => {
     setGroupedTasks(sortedGroupedTasks);
   }, [sortedGroupedTasks]);
+
+  // Sanitize bookmarks - remove bookmarks for tasks that no longer exist
+  useBookmarkSanitizer(tasks, appState, setAppState);
 
   return (
     <TaskManagerContext.Provider

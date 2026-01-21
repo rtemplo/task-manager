@@ -115,6 +115,26 @@ export const appStateApi = {
     });
     await handleResponse(response);
   },
+
+  async addBookmark(userId: string, taskId: string): Promise<AppState> {
+    const response = await fetch(`${API_BASE_URL}/app-state/${userId}/bookmarks/add/${taskId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    return handleResponse<AppState>(response);
+  },
+
+  async removeBookmark(userId: string, taskId: string): Promise<AppState> {
+    const response = await fetch(`${API_BASE_URL}/app-state/${userId}/bookmarks/remove/${taskId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    return handleResponse<AppState>(response);
+  },
 };
 
 export { ApiError };

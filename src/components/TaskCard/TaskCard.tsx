@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FaRegEdit } from "react-icons/fa";
 import { FaEllipsis } from "react-icons/fa6";
+import { LuBookmarkCheck, LuBookmarkMinus, LuBookmarkPlus } from "react-icons/lu";
 import { TiDeleteOutline } from "react-icons/ti";
-import { taskApi } from "../../api/taskApi";
+import { appStateApi, taskApi } from "../../api/taskApi";
 import type { Task } from "../../common/types";
 import { useTaskForm } from "../../contexts/TaskFormContext";
 import { useTaskManagerContext } from "../../contexts/TaskManagerContext";
@@ -15,7 +16,7 @@ interface TaskCardProps {
 }
 
 export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
-  const { users, tasks, setModalMode, setTasks, setError } = useTaskManagerContext();
+  const { users, tasks, appState, setModalMode, setTasks, setAppState, setError } = useTaskManagerContext();
   const { setTaskFormData } = useTaskForm();
   const { handleCardDragStart, handleCardDragOver } = useDragAndDrop({
     task,
@@ -28,6 +29,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
 
   const user = users.find((user) => user.id === task.assigneeId);
   const overdue = task.dueDate < new Date().toISOString() && task.status !== "done";
+  const isBookmarked = appState?.tasks.bookmarks.includes(task.id) ?? false;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -80,6 +82,21 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
     [setTasks, setError]
   );
 
+  const toggleBookmark = useCallback(async () => {
+    if (!appState) return;
+
+    try {
+      const updatedAppState = isBookmarked
+        ? await appStateApi.removeBookmark(appState.userId, task.id)
+        : await appStateApi.addBookmark(appState.userId, task.id);
+      setAppState(updatedAppState);
+      setIsMenuOpen(false);
+    } catch (err) {
+      console.error("Error toggling bookmark:", err);
+      setError(err instanceof Error ? err.message : "Failed to update bookmark");
+    }
+  }, [appState, isBookmarked, task.id, setAppState, setError]);
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
@@ -98,31 +115,42 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
     >
       <div className={styles.taskHeader}>
         <h3 className={styles.taskTitle}>{task.title}</h3>
-        <div className={styles.menuContainer} ref={menuRef}>
-          <button
-            type="button"
-            title="More options"
-            className={styles.menuButton}
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsMenuOpen(!isMenuOpen);
-            }}
-            aria-label="More options"
-          >
-            <FaEllipsis />
-          </button>
-          {isMenuOpen && (
-            <div className={styles.dropdownMenu}>
-              <button type="button" className={styles.menuItem} onClick={() => editTask(task.id)}>
-                <FaRegEdit />
-                <span>Edit</span>
-              </button>
-              <button type="button" className={styles.menuItem} onClick={() => deleteTask(task.id)}>
-                <TiDeleteOutline size={18} />
-                <span>Delete</span>
-              </button>
+        <div className={styles.headerActions}>
+          {isBookmarked && (
+            <div className={styles.bookmarkIndicator} title="Bookmarked">
+              <LuBookmarkCheck />
             </div>
           )}
+          <div className={styles.menuContainer} ref={menuRef}>
+            <button
+              type="button"
+              title="More options"
+              className={styles.menuButton}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsMenuOpen(!isMenuOpen);
+              }}
+              aria-label="More options"
+            >
+              <FaEllipsis />
+            </button>
+            {isMenuOpen && (
+              <div className={styles.dropdownMenu}>
+                <button type="button" className={styles.menuItem} onClick={() => editTask(task.id)}>
+                  <FaRegEdit />
+                  <span>Edit</span>
+                </button>
+                <button type="button" className={styles.menuItem} onClick={toggleBookmark}>
+                  {isBookmarked ? <LuBookmarkMinus /> : <LuBookmarkPlus />}
+                  <span>{isBookmarked ? "Remove Bookmark" : "Add Bookmark"}</span>
+                </button>
+                <button type="button" className={styles.menuItem} onClick={() => deleteTask(task.id)}>
+                  <TiDeleteOutline size={18} />
+                  <span>Delete</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
       <p className={styles.taskDescription}>{task.description}</p>

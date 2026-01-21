@@ -9,6 +9,7 @@ export const FilterTags = () => {
     <div className={styles.filterTags}>
       {Object.keys(appliedFilters)
         .filter((key) => {
+          if (key === "showBookmarkedOnly" && !appliedFilters.showBookmarkedOnly) return false;
           if (key === "searchBy" && appliedFilters.searchBy === "all") return false;
           if (key === "assigneeIds" && appliedFilters.assigneeIds.length === 0) return false;
           if (key === "priorities" && appliedFilters.priorities.length === 0) return false;
@@ -17,6 +18,7 @@ export const FilterTags = () => {
         })
         .map((key) => {
           let displayValue = "";
+          if (key === "showBookmarkedOnly") displayValue = "Bookmarked Only";
           if (key === "searchBy") displayValue = `Search By: ${appliedFilters.searchBy}`;
           if (key === "assigneeIds") displayValue = `Assignees: ${appliedFilters.assigneeIds.length}`;
           if (key === "priorities") displayValue = `Priorities: ${appliedFilters.priorities.length}`;

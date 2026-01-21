@@ -69,6 +69,23 @@
   flex: 1;
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.bookmarkIndicator {
+  color: #10b981;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
 .menuContainer {
   position: relative;
 }

@@ -9,7 +9,7 @@ import {
 } from "react";
 import type { FilterAction, FilterState, TaskPriority } from "../common/types";
 
-const filterStateReducer = (state: FilterState, action: FilterAction) => {
+const filterStateReducer = (state: FilterState, action: FilterAction): FilterState => {
   switch (action.type) {
     case "SET_SEARCH_BY":
       return { ...state, searchBy: action.payload.searchBy };
@@ -17,6 +17,8 @@ const filterStateReducer = (state: FilterState, action: FilterAction) => {
       return { ...state, assigneeIds: action.payload.assigneeIds };
     case "SET_PRIORITIES":
       return { ...state, priorities: action.payload.priorities };
+    case "SET_SHOW_BOOKMARKED_ONLY":
+      return { ...state, showBookmarkedOnly: action.payload.showBookmarkedOnly };
     case "SET_DUE_DATE_RANGE":
       return { ...state, dueDateRange: action.payload.dueDateRange };
     case "RESET_FILTER":
@@ -26,6 +28,7 @@ const filterStateReducer = (state: FilterState, action: FilterAction) => {
         searchBy: "all" as const,
         assigneeIds: [],
         priorities: [],
+        showBookmarkedOnly: false,
         dueDateRange: null,
       };
     default:
@@ -39,6 +42,7 @@ interface ITaskFilterContext {
   setSearchBy: (searchBy: FilterState["searchBy"]) => void;
   setAssigneeIds: (ids: string[]) => void;
   setPriorities: (priorities: FilterState["priorities"]) => void;
+  setShowBookmarkedOnly: (showBookmarkedOnly: FilterState["showBookmarkedOnly"]) => void;
   setDueDateRange: (dueDateRange: FilterState["dueDateRange"]) => void;
   setAppliedFilters: Dispatch<SetStateAction<FilterState>>;
   resetField: (field: keyof FilterState) => void;
@@ -49,6 +53,7 @@ const defaultFilterState: FilterState = {
   searchBy: "all",
   assigneeIds: [],
   priorities: [],
+  showBookmarkedOnly: false,
   dueDateRange: null,
 };
 
@@ -58,6 +63,7 @@ const TaskFilterContext = createContext<ITaskFilterContext>({
   setSearchBy: () => {},
   setAssigneeIds: () => {},
   setPriorities: () => {},
+  setShowBookmarkedOnly: () => {},
   setDueDateRange: () => {},
   setAppliedFilters: () => {},
   resetField: () => {},
@@ -78,6 +84,10 @@ export const TaskFilterProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   const setPriorities = useCallback((priorities: TaskPriority[]) => {
     dispatch({ type: "SET_PRIORITIES", payload: { priorities } });
+  }, []);
+
+  const setShowBookmarkedOnly = useCallback((showBookmarkedOnly: boolean) => {
+    dispatch({ type: "SET_SHOW_BOOKMARKED_ONLY", payload: { showBookmarkedOnly } });
   }, []);
 
   const setDueDateRange = useCallback((dueDateRange: FilterState["dueDateRange"]) => {
@@ -101,6 +111,7 @@ export const TaskFilterProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         setSearchBy,
         setAssigneeIds,
         setPriorities,
+        setShowBookmarkedOnly,
         setDueDateRange,
         setAppliedFilters,
         resetField,

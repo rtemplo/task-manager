@@ -11,10 +11,11 @@ export const FilterModal: React.FC = () => {
   const { users, setModalMode } = useTaskManagerContext();
   const {
     filterState,
-    filterState: { searchBy, assigneeIds, priorities, dueDateRange },
+    filterState: { searchBy, assigneeIds, priorities, showBookmarkedOnly, dueDateRange },
     setSearchBy,
     setAssigneeIds,
     setPriorities,
+    setShowBookmarkedOnly,
     setDueDateRange,
     setAppliedFilters,
     resetFilters,
@@ -35,6 +36,10 @@ export const FilterModal: React.FC = () => {
       updatedPriorities = updatedPriorities.filter((p) => p !== value);
     }
     setPriorities(updatedPriorities);
+  };
+
+  const handleShowBookmarkedChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+    setShowBookmarkedOnly(e.target.checked);
   };
 
   const handleUserAdd: React.MouseEventHandler<HTMLButtonElement> = (e) => {
@@ -156,41 +161,61 @@ export const FilterModal: React.FC = () => {
               </label>
             </div>
           </fieldset>
-          <fieldset className={styles.modalFieldsetGroup}>
-            <legend className={styles.columnCheckboxLabel}>Priorities:</legend>
-            <div className={styles.columnCheckboxes}>
-              <label className={styles.columnCheckbox} title="low priority" aria-label="low priority">
-                <input
-                  name="priority"
-                  type="checkbox"
-                  checked={priorities.includes("low")}
-                  value="low"
-                  onChange={handlePriorityChange}
-                />
-                Low
-              </label>
-              <label className={styles.columnCheckbox} title="medium priority" aria-label="medium priority">
-                <input
-                  name="priority"
-                  type="checkbox"
-                  checked={priorities.includes("medium")}
-                  value="medium"
-                  onChange={handlePriorityChange}
-                />
-                Medium
-              </label>
-              <label className={styles.columnCheckbox} title="high priority" aria-label="high priority">
-                <input
-                  name="priority"
-                  type="checkbox"
-                  checked={priorities.includes("high")}
-                  value="high"
-                  onChange={handlePriorityChange}
-                />
-                High
-              </label>
-            </div>
-          </fieldset>
+          <div style={{ display: "flex", gap: "1rem" }} className={styles.flexGrow}>
+            <fieldset className={`${styles.modalFieldsetGroup} ${styles.flexGrow}`}>
+              <legend className={styles.columnCheckboxLabel}>Priorities:</legend>
+              <div className={styles.columnCheckboxes}>
+                <label className={styles.columnCheckbox} title="low priority" aria-label="low priority">
+                  <input
+                    name="priority"
+                    type="checkbox"
+                    checked={priorities.includes("low")}
+                    value="low"
+                    onChange={handlePriorityChange}
+                  />
+                  Low
+                </label>
+                <label className={styles.columnCheckbox} title="medium priority" aria-label="medium priority">
+                  <input
+                    name="priority"
+                    type="checkbox"
+                    checked={priorities.includes("medium")}
+                    value="medium"
+                    onChange={handlePriorityChange}
+                  />
+                  Medium
+                </label>
+                <label className={styles.columnCheckbox} title="high priority" aria-label="high priority">
+                  <input
+                    name="priority"
+                    type="checkbox"
+                    checked={priorities.includes("high")}
+                    value="high"
+                    onChange={handlePriorityChange}
+                  />
+                  High
+                </label>
+              </div>
+            </fieldset>
+            <fieldset className={styles.modalFieldsetGroup}>
+              <legend className={styles.columnCheckboxLabel}>Bookmarked Only:</legend>
+              <div className={styles.columnCheckboxes}>
+                <label
+                  className={styles.columnCheckbox}
+                  title="Show only bookmarked tasks"
+                  aria-label="Show only bookmarked tasks"
+                >
+                  <input
+                    name="showBookmarkedOnly"
+                    type="checkbox"
+                    checked={showBookmarkedOnly}
+                    onChange={handleShowBookmarkedChange}
+                  />
+                  Bookmarked Only
+                </label>
+              </div>
+            </fieldset>
+          </div>
           <div className={styles.userSelection}>
             <div className={styles.userSelectionColumn}>
               <h3 className={styles.userSelectionColumnTitle}>Available Assignees:</h3>

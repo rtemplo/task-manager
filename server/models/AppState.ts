@@ -18,6 +18,7 @@ export interface IAppState extends Document {
       applyToAllColumns: boolean;
       columnSortConfigs: IColumnSortConfig;
     };
+    bookmarks: string[];
   };
   createdAt: string;
   updatedAt: string;
@@ -62,6 +63,10 @@ const appStateSchema = new Schema<IAppState>(
             default: [{ field: "dueDate", direction: "ascending" }],
           },
         },
+      },
+      bookmarks: {
+        type: [String],
+        default: [],
       },
     },
   },

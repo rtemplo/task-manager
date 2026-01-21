@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { IoCloseCircle } from "react-icons/io5";
+import { LuBookmark } from "react-icons/lu";
 import { useTaskManagerContext } from "../../contexts/TaskManagerContext";
 import { useTaskFilterContext } from "../../contexts/TaskManagerFilterContext";
 import { useDebounce } from "../../hooks/useDebounce";
@@ -8,8 +9,8 @@ import styles from "./ControlBar.module.css";
 
 export const ControlBar = () => {
   const { setModalMode, setSearchQuery } = useTaskManagerContext();
-  const { appliedFilters } = useTaskFilterContext();
-  const { searchBy } = appliedFilters;
+  const { appliedFilters, setShowBookmarkedOnly, setAppliedFilters } = useTaskFilterContext();
+  const { searchBy, showBookmarkedOnly } = appliedFilters;
   const [query, setQuery] = useState("");
   const debouncedValue = useDebounce(query, 300);
 
@@ -18,6 +19,12 @@ export const ControlBar = () => {
   }, [debouncedValue, setSearchQuery]);
 
   const searchByText = searchBy === "all" ? "title, description, or tags" : searchBy;
+
+  const toggleBookmarkFilter = () => {
+    const newValue = !showBookmarkedOnly;
+    setShowBookmarkedOnly(newValue);
+    setAppliedFilters((prev) => ({ ...prev, showBookmarkedOnly: newValue }));
+  };
 
   return (
     <div className={styles.controlBar}>
@@ -42,6 +49,15 @@ export const ControlBar = () => {
             </button>
           )}
         </div>
+        <button
+          type="button"
+          className={`${styles.bookmarkButton} ${showBookmarkedOnly ? styles.active : ""}`}
+          onClick={toggleBookmarkFilter}
+          aria-label="Toggle bookmarked tasks filter"
+          title={showBookmarkedOnly ? "Show all tasks" : "Show bookmarked tasks only"}
+        >
+          <LuBookmark />
+        </button>
         <button type="button" className={styles.sortButton} onClick={() => setModalMode("filter")}>
           Search & Filter Options
         </button>

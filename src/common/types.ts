@@ -81,6 +81,7 @@ export interface FilterState {
   searchBy: SearchBy;
   assigneeIds: string[];
   priorities: TaskPriority[];
+  showBookmarkedOnly: boolean;
   dueDateRange: { from?: string; to?: string } | null;
 }
 
@@ -88,6 +89,7 @@ export type FilterAction =
   | { type: "SET_SEARCH_BY"; payload: { searchBy: FilterState["searchBy"] } }
   | { type: "SET_ASSIGNEE_IDS"; payload: { assigneeIds: string[] } }
   | { type: "SET_PRIORITIES"; payload: { priorities: TaskPriority[] } }
+  | { type: "SET_SHOW_BOOKMARKED_ONLY"; payload: { showBookmarkedOnly: boolean } }
   | { type: "SET_DUE_DATE_RANGE"; payload: { dueDateRange: FilterState["dueDateRange"] } }
   | { type: "RESET_FILTER"; payload: { field: keyof FilterState } }
   | { type: "RESET_ALL_FILTERS" };
@@ -98,6 +100,7 @@ export interface AppState {
     sort: {
       columnSortConfigs: ColumnSortConfig;
     };
+    bookmarks: string[];
   };
   createdAt: string;
   updatedAt: string;

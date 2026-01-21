@@ -1,10 +1,15 @@
 import { useMemo } from "react";
 import type { FilterState, Task } from "../common/types";
 
-export const useTaskFiltering = (tasks: Task[], appliedFilters: FilterState, searchQuery: string) => {
+export const useTaskFiltering = (
+  tasks: Task[],
+  appliedFilters: FilterState,
+  searchQuery: string,
+  bookmarks: string[] = []
+) => {
   return useMemo(() => {
     let filteredTasks = tasks;
-    const { assigneeIds, priorities, dueDateRange, searchBy } = appliedFilters;
+    const { assigneeIds, priorities, dueDateRange, searchBy, showBookmarkedOnly } = appliedFilters;
 
     // Filter by assignee IDs
     if (assigneeIds.length > 0) {
@@ -14,6 +19,11 @@ export const useTaskFiltering = (tasks: Task[], appliedFilters: FilterState, sea
     // Filter by priorities
     if (priorities.length > 0) {
       filteredTasks = filteredTasks.filter((task) => priorities.includes(task.priority));
+    }
+
+    // Filter by bookmarked only
+    if (showBookmarkedOnly) {
+      filteredTasks = filteredTasks.filter((task) => bookmarks.includes(task.id));
     }
 
     // Filter by due date range
@@ -51,5 +61,5 @@ export const useTaskFiltering = (tasks: Task[], appliedFilters: FilterState, sea
     }
 
     return filteredTasks;
-  }, [tasks, appliedFilters, searchQuery]);
+  }, [tasks, appliedFilters, searchQuery, bookmarks]);
 };

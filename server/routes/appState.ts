@@ -62,6 +62,50 @@ router.put("/:userId/sort-config", async (req: Request, res: Response) => {
   }
 });
 
+// PUT add task to bookmarks
+router.put("/:userId/bookmarks/add/:taskId", async (req: Request, res: Response) => {
+  try {
+    const { userId, taskId } = req.params;
+
+    const appState = await AppState.findOneAndUpdate(
+      { userId },
+      { $addToSet: { "tasks.bookmarks": taskId } },
+      { new: true, upsert: true, runValidators: true }
+    );
+
+    res.json(appState);
+  } catch (error) {
+    res.status(400).json({
+      message: "Error adding task to bookmarks",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+});
+
+// PUT remove task from bookmarks
+router.put("/:userId/bookmarks/remove/:taskId", async (req: Request, res: Response) => {
+  try {
+    const { userId, taskId } = req.params;
+
+    const appState = await AppState.findOneAndUpdate(
+      { userId },
+      { $pull: { "tasks.bookmarks": taskId } },
+      { new: true }
+    );
+
+    if (!appState) {
+      return res.status(404).json({ message: "App state not found" });
+    }
+
+    res.json(appState);
+  } catch (error) {
+    res.status(400).json({
+      message: "Error removing task from bookmarks",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+});
+
 // DELETE reset appState for a user
 router.delete("/:userId", async (req: Request, res: Response) => {
   try {
