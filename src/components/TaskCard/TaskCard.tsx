@@ -8,6 +8,8 @@ import type { Task } from "../../common/types";
 import { useTaskForm } from "../../contexts/TaskFormContext";
 import { useTaskManagerContext } from "../../contexts/TaskManagerContext";
 import { useDragAndDrop } from "../../hooks/useDragAndDrop";
+import { useEscapeKey } from "../../hooks/useEscapeKey";
+import { DeleteConfirmPopover } from "../DeleteConfirmPopover/DeleteConfirmPopover";
 import styles from "./TaskCard.module.css";
 
 interface TaskCardProps {
@@ -26,6 +28,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const deleteButtonRef = useRef<HTMLButtonElement>(null);
 
   const user = users.find((user) => user.id === task.assigneeId);
   const overdue = task.dueDate < new Date().toISOString() && task.status !== "done";
@@ -43,6 +47,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
       return () => document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [isMenuOpen]);
+
+  useEscapeKey(() => setIsMenuOpen(false), isMenuOpen);
 
   const editTask = useCallback(
     (taskId: string) => {
@@ -68,15 +74,14 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
 
   const deleteTask = useCallback(
     async (taskId: string) => {
-      if (window.confirm("Are you sure you want to delete this task?")) {
-        try {
-          await taskApi.delete(taskId);
-          setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
-          setIsMenuOpen(false);
-        } catch (err) {
-          console.error("Error deleting task:", err);
-          setError(err instanceof Error ? err.message : "Failed to delete task");
-        }
+      try {
+        await taskApi.delete(taskId);
+        setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+        setIsMenuOpen(false);
+        setShowDeleteConfirm(false);
+      } catch (err) {
+        console.error("Error deleting task:", err);
+        setError(err instanceof Error ? err.message : "Failed to delete task");
       }
     },
     [setTasks, setError]
@@ -144,7 +149,15 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
                   {isBookmarked ? <LuBookmarkMinus /> : <LuBookmarkPlus />}
                   <span>{isBookmarked ? "Remove Bookmark" : "Add Bookmark"}</span>
                 </button>
-                <button type="button" className={styles.menuItem} onClick={() => deleteTask(task.id)}>
+                <button
+                  ref={deleteButtonRef}
+                  type="button"
+                  className={styles.menuItem}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowDeleteConfirm(true);
+                  }}
+                >
                   <TiDeleteOutline size={18} />
                   <span>Delete</span>
                 </button>
@@ -153,6 +166,13 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
           </div>
         </div>
       </div>
+      {showDeleteConfirm && (
+        <DeleteConfirmPopover
+          anchorEl={deleteButtonRef.current}
+          onConfirm={() => deleteTask(task.id)}
+          onCancel={() => setShowDeleteConfirm(false)}
+        />
+      )}
       <p className={styles.taskDescription}>{task.description}</p>
       <div className={styles.taskTags}>
         {task.tags.map((tag) => (

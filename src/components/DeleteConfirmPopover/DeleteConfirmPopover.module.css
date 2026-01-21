@@ -1,0 +1,85 @@
+.popover {
+  position: fixed;
+  z-index: 1000;
+  background: var(--scheme-bg);
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  animation: popIn 0.15s ease-out;
+  pointer-events: auto;
+  will-change: auto;
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 140px;
+}
+
+.message {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--scheme-text);
+  text-align: center;
+  font-weight: 500;
+}
+
+.buttons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.button {
+  padding: 0.4rem 1rem;
+  border: none;
+  border-radius: 0.25rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: 1;
+}
+
+.yesButton {
+  background: #ef4444;
+  color: var(--scheme-text);
+}
+
+.yesButton:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+}
+
+.yesButton:active {
+  transform: translateY(0);
+}
+
+.noButton {
+  background: rgba(128, 128, 128, 0.2);
+  color: var(--scheme-text);
+  border: 1px solid rgba(128, 128, 128, 0.3);
+}
+
+.noButton:hover {
+  background: rgba(128, 128, 128, 0.3);
+  transform: translateY(-1px);
+}
+
+.noButton:active {
+  transform: translateY(0);
+}
