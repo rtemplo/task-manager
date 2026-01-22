@@ -127,7 +127,6 @@
   margin-top: 0.25rem;
   background: var(--scheme-bg);
   border: 1px solid var(--scheme-border);
-  color: var(--scheme-text);
   border-radius: 0.375rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   min-width: 140px;

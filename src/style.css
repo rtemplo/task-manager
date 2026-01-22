@@ -125,7 +125,6 @@ select {
   box-sizing: border-box;
   border: 2px solid var(--scheme-border);
   background: var(--scheme-bg);
-  color: var(--scheme-text);
   border-radius: 0.75rem;
   z-index: 1000;
   padding: 1rem;
