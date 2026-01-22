@@ -9,6 +9,14 @@ import {
 } from "react";
 import type { FilterAction, FilterState, TaskPriority } from "../common/types";
 
+const defaultFilterState: FilterState = {
+  searchBy: "all",
+  assigneeIds: [],
+  priorities: [],
+  showBookmarkedOnly: false,
+  dueDateRange: null,
+};
+
 const filterStateReducer = (state: FilterState, action: FilterAction): FilterState => {
   switch (action.type) {
     case "SET_SEARCH_BY":
@@ -24,13 +32,7 @@ const filterStateReducer = (state: FilterState, action: FilterAction): FilterSta
     case "RESET_FILTER":
       return { ...state, [action.payload.field]: defaultFilterState[action.payload.field] };
     case "RESET_ALL_FILTERS":
-      return {
-        searchBy: "all" as const,
-        assigneeIds: [],
-        priorities: [],
-        showBookmarkedOnly: false,
-        dueDateRange: null,
-      };
+      return structuredClone(defaultFilterState);
     default:
       return state;
   }
@@ -48,14 +50,6 @@ interface ITaskFilterContext {
   resetField: (field: keyof FilterState) => void;
   resetFilters: () => void;
 }
-
-const defaultFilterState: FilterState = {
-  searchBy: "all",
-  assigneeIds: [],
-  priorities: [],
-  showBookmarkedOnly: false,
-  dueDateRange: null,
-};
 
 const TaskFilterContext = createContext<ITaskFilterContext>({
   filterState: defaultFilterState,
