@@ -7,12 +7,14 @@ interface DeleteConfirmPopoverProps {
   onConfirm: () => void;
   onCancel: () => void;
   anchorEl: HTMLElement | null;
+  message?: string;
 }
 
 export const DeleteConfirmPopover: React.FC<DeleteConfirmPopoverProps> = ({
   onConfirm,
   onCancel,
   anchorEl,
+  message = "Are you sure?",
 }) => {
   const popoverRef = useRef<HTMLDivElement>(null);
 
@@ -62,7 +64,7 @@ export const DeleteConfirmPopover: React.FC<DeleteConfirmPopoverProps> = ({
       }}
     >
       <div className={styles.content}>
-        <p className={styles.message}>Are you sure?</p>
+        <p className={styles.message}>{message}</p>
         <div className={styles.buttons}>
           <button type="button" className={`${styles.button} ${styles.yesButton}`} onClick={onConfirm}>
             Yes

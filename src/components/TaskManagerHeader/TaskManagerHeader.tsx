@@ -49,6 +49,7 @@ export const TaskManagerHeader: React.FC = () => {
             anchorEl={resetButtonRef.current}
             onConfirm={handleResetDemo}
             onCancel={() => setShowResetConfirm(false)}
+            message="This will reset all demo data back to its original state. Are you sure?"
           />
         )}
         <button
