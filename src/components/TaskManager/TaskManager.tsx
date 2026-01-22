@@ -14,14 +14,6 @@ import styles from "./TaskManager.module.css";
 const TaskManager: React.FC = () => {
   const { loading, error, modalMode, setError } = useTaskManagerContext();
 
-  const handleDragEnd = () => {
-    console.log("Drag ended at TaskManager level");
-  };
-
-  const handleDragDrop = () => {
-    console.log("Drag dropped at TaskManager level");
-  };
-
   const loaderMode = loading ? "visible" : "hidden";
   const taskModalMode = modalMode === "add" || modalMode === "edit" ? "visible" : "hidden";
   const sortModalMode = modalMode === "sort" ? "visible" : "hidden";
@@ -29,8 +21,7 @@ const TaskManager: React.FC = () => {
   const errorAlertMode = error ? "visible" : "hidden";
 
   return (
-    // biome-ignore lint/a11y/noStaticElementInteractions: Static Elements should not be interactive.
-    <div className={styles.container} onDragEnd={handleDragEnd} onDrop={handleDragDrop}>
+    <div className={styles.container}>
       <Activity mode={loaderMode}>
         <Loader />
       </Activity>
