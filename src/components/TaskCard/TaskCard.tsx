@@ -36,7 +36,11 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      // Check if click is outside menu AND not on a popover element
+      const isClickOnPopover = (target as Element).closest?.('[class*="popover"]');
+
+      if (menuRef.current && !menuRef.current.contains(target) && !isClickOnPopover) {
         setIsMenuOpen(false);
         setShowDeleteConfirm(false);
       }
