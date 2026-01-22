@@ -39,6 +39,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setIsMenuOpen(false);
+        setShowDeleteConfirm(false);
       }
     };
 
@@ -48,7 +49,17 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
     }
   }, [isMenuOpen]);
 
-  useEscapeKey(() => setIsMenuOpen(false), isMenuOpen);
+  // Close confirm dialog when menu closes
+  useEffect(() => {
+    if (!isMenuOpen) {
+      setShowDeleteConfirm(false);
+    }
+  }, [isMenuOpen]);
+
+  useEscapeKey(() => {
+    setIsMenuOpen(false);
+    setShowDeleteConfirm(false);
+  }, isMenuOpen);
 
   const editTask = useCallback(
     (taskId: string) => {
