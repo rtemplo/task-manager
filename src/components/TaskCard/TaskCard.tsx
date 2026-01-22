@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { BsBookmarkDash, BsBookmarkPlus } from "react-icons/bs";
 import { FaRegEdit } from "react-icons/fa";
-import { FaEllipsis } from "react-icons/fa6";
-import { LuBookmarkCheck, LuBookmarkMinus, LuBookmarkPlus } from "react-icons/lu";
-import { TiDeleteOutline } from "react-icons/ti";
+import { FaEllipsis, FaRegTrashCan } from "react-icons/fa6";
 import { appStateApi, taskApi } from "../../api/taskApi";
 import type { Task } from "../../common/types";
 import { useTaskForm } from "../../contexts/TaskFormContext";
@@ -134,7 +133,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
         <div className={styles.headerActions}>
           {isBookmarked && (
             <div className={styles.bookmarkIndicator} title="Bookmarked">
-              <LuBookmarkCheck />
+              <BsBookmarkPlus />
             </div>
           )}
           <div className={styles.menuContainer} ref={menuRef}>
@@ -157,7 +156,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
                   <span>Edit</span>
                 </button>
                 <button type="button" className={styles.menuItem} onClick={toggleBookmark}>
-                  {isBookmarked ? <LuBookmarkMinus /> : <LuBookmarkPlus />}
+                  {isBookmarked ? <BsBookmarkDash /> : <BsBookmarkPlus />}
                   <span>{isBookmarked ? "Remove Bookmark" : "Add Bookmark"}</span>
                 </button>
                 <button
@@ -169,7 +168,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
                     setShowDeleteConfirm(true);
                   }}
                 >
-                  <TiDeleteOutline size={18} />
+                  <FaRegTrashCan size={24} />
                   <span>Delete</span>
                 </button>
               </div>
