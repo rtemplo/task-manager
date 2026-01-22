@@ -26,6 +26,15 @@ export const ControlBar = () => {
     setAppliedFilters((prev) => ({ ...prev, showBookmarkedOnly: newValue }));
   };
 
+  const showFilterTags = Object.keys(appliedFilters).some((key) => {
+    if (key === "searchBy" && appliedFilters.searchBy !== "all") return true;
+    if (key === "assigneeIds" && appliedFilters.assigneeIds.length > 0) return true;
+    if (key === "priorities" && appliedFilters.priorities.length > 0) return true;
+    if (key === "dueDateRange" && (appliedFilters.dueDateRange?.from || appliedFilters.dueDateRange?.to))
+      return true;
+    return false;
+  });
+
   return (
     <div className={styles.controlBar}>
       <div className={styles.filterControls}>
@@ -65,7 +74,7 @@ export const ControlBar = () => {
           Sort Options
         </button>
       </div>
-      <FilterTags />
+      {showFilterTags && <FilterTags />}
     </div>
   );
   // });
