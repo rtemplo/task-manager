@@ -1,4 +1,4 @@
-import { Activity } from "react";
+import { Activity, type ActivityProps } from "react";
 import { useTaskManagerContext } from "../../contexts/TaskManagerContext";
 import { ControlBar } from "../ControlBar/ControlBar";
 import { ErrorAlert } from "../ErrorAlert/ErrorAlert";
@@ -11,14 +11,16 @@ import { TaskManagerHeader } from "../TaskManagerHeader/TaskManagerHeader";
 import { TaskModal } from "../TaskModal/TaskModal";
 import styles from "./TaskManager.module.css";
 
+type VisibilityMode = ActivityProps["mode"];
+
 const TaskManager: React.FC = () => {
   const { loading, error, modalMode, setError } = useTaskManagerContext();
 
-  const loaderMode = loading ? "visible" : "hidden";
-  const taskModalMode = modalMode === "add" || modalMode === "edit" ? "visible" : "hidden";
-  const sortModalMode = modalMode === "sort" ? "visible" : "hidden";
-  const filterModalMode = modalMode === "filter" ? "visible" : "hidden";
-  const errorAlertMode = error ? "visible" : "hidden";
+  const loaderMode: VisibilityMode = loading ? "visible" : "hidden";
+  const taskModalMode: VisibilityMode = modalMode === "add" || modalMode === "edit" ? "visible" : "hidden";
+  const sortModalMode: VisibilityMode = modalMode === "sort" ? "visible" : "hidden";
+  const filterModalMode: VisibilityMode = modalMode === "filter" ? "visible" : "hidden";
+  const errorAlertMode: VisibilityMode = error ? "visible" : "hidden";
 
   return (
     <div className={styles.container}>

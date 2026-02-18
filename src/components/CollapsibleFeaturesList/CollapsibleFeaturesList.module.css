@@ -1,0 +1,71 @@
+.container {
+  margin-top: 0.5rem;
+}
+
+.toggleButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #3b82f6;
+  transition: all 0.2s;
+  border-radius: 0.25rem;
+}
+
+.toggleButton:hover {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.toggleIcon {
+  display: inline-block;
+  font-size: 0.75rem;
+  transition: transform 0.2s;
+}
+
+.toggleText {
+  text-decoration: underline;
+}
+
+.details {
+  margin: 0.75rem 0 0 0;
+  padding-left: 2rem;
+  list-style-type: disc;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  animation: slideDown 0.3s ease-out;
+}
+
+.details li {
+  margin-bottom: 0.5rem;
+  color: rgba(0, 0, 0, 0.7);
+}
+
+@media (prefers-color-scheme: dark) {
+  .details li {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .toggleButton {
+    color: #60a5fa;
+  }
+
+  .toggleButton:hover {
+    background: rgba(96, 165, 250, 0.15);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { RiResetLeftFill } from "react-icons/ri";
 import { seedApi } from "../../api/taskApi";
 import { useTaskManagerContext } from "../../contexts/TaskManagerContext";
+import { CollapsibleFeaturesList } from "../CollapsibleFeaturesList/CollapsibleFeaturesList";
 import { DeleteConfirmPopover } from "../DeleteConfirmPopover/DeleteConfirmPopover";
 import styles from "./TaskManagerHeader.module.css";
 
@@ -31,7 +32,10 @@ export const TaskManagerHeader: React.FC = () => {
 
   return (
     <div className={styles.header}>
-      <h1 className={styles.title}>Task Manager</h1>
+      <div className={styles.headerTitle}>
+        <h1 className={styles.title}>Kanban Board (MERN Fullstack Demo)</h1>
+        <CollapsibleFeaturesList />
+      </div>
       <div className={styles.headerActions}>
         <button
           ref={resetButtonRef}
