@@ -32,7 +32,7 @@ export const CollapsibleFeaturesList: React.FC = () => {
       {isExpanded && (
         <ul className={styles.details}>
           <li>
-            Drag and drop tasks to aross different status columns or drag vertically for a custom sequence.
+            Drag and drop tasks across different status columns or drag vertically for a custom sequence.
           </li>
           <li>From the task card context menu: edit, bookmark, or delete tasks</li>
           <li>Set search and filter options + set composite sort options</li>
@@ -40,6 +40,7 @@ export const CollapsibleFeaturesList: React.FC = () => {
           <li>No 3rd party libraries</li>
           <li>Fully resettable</li>
           <li>Fully componentized demonstrating custom hooks and layered contexts</li>
+          <li>State persistence across sessions</li>
         </ul>
       )}
     </div>
