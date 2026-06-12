@@ -37,7 +37,7 @@
   list-style-type: disc;
   font-size: 0.875rem;
   line-height: 1.6;
-  animation: slideDown 0.3s ease-out;
+  animation: slideDown 0.3s ease-out both;
 }
 
 .details li {
