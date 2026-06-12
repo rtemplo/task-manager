@@ -41,6 +41,11 @@ export const CollapsibleFeaturesList: React.FC = () => {
           <li>Fully resettable</li>
           <li>Fully componentized demonstrating custom hooks and layered contexts</li>
           <li>State persistence across sessions</li>
+          <li>
+            <a href="/task-manager-architecture.html" target="_blank" rel="noopener noreferrer">
+              Component architecture diagram
+            </a>
+          </li>
         </ul>
       )}
     </div>

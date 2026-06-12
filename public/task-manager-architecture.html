@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Task Manager · Component Architecture</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f5;
+      color: #212529;
+      line-height: 1.6;
+      padding: 2.5rem 3rem;
+    }
+
+    header { margin-bottom: 3rem; border-bottom: 3px solid #343a40; padding-bottom: 1rem; }
+    header h1 { font-size: 2rem; color: #1a1a2e; }
+    header p { color: #6c757d; font-size: 0.9rem; margin-top: 0.25rem; }
+
+    section { margin-bottom: 3.5rem; }
+
+    h2 {
+      font-size: 1.3rem;
+      color: #343a40;
+      margin-bottom: 1rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 2px solid #dee2e6;
+    }
+
+    h3 {
+      font-size: 1rem;
+      color: #495057;
+      margin: 2rem 0 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .diagram-wrap {
+      background: #fff;
+      border: 1px solid #dee2e6;
+      border-radius: 10px;
+      padding: 2rem 1.5rem;
+      overflow-x: auto;
+      display: flex;
+      justify-content: center;
+    }
+
+    .diagram-wrap .mermaid { min-width: 300px; }
+
+    .diagram-wrap.full-width { display: block; }
+    .diagram-wrap.full-width .mermaid { width: 100%; }
+    .diagram-wrap.full-width .mermaid svg { width: 100%; height: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.865rem;
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      margin-bottom: 0.5rem;
+    }
+
+    th {
+      background: #343a40;
+      color: #f8f9fa;
+      text-align: left;
+      padding: 0.65rem 1rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid #e9ecef;
+      vertical-align: top;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:nth-child(even) td { background: #f8f9fa; }
+
+    code {
+      background: #e9ecef;
+      padding: 0.1em 0.4em;
+      border-radius: 4px;
+      font-size: 0.83em;
+      font-family: 'Consolas', 'Fira Code', monospace;
+      color: #c0392b;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.15em 0.55em;
+      border-radius: 4px;
+      font-size: 0.75em;
+      font-weight: 600;
+      margin: 0.1em 0.15em 0.1em 0;
+      white-space: nowrap;
+    }
+    .ctx  { background: #cfe2ff; color: #084298; }
+    .hook { background: #fff3cd; color: #664d03; }
+    .api  { background: #f8d7da; color: #842029; }
+
+    .legend {
+      display: flex;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.75rem;
+      font-size: 0.83rem;
+      color: #495057;
+      align-items: center;
+    }
+
+    .legend strong { color: #343a40; }
+
+    .dash-line {
+      display: inline-block;
+      width: 28px;
+      height: 0;
+      border-top: 2px dashed #666;
+      vertical-align: middle;
+      margin-right: 4px;
+    }
+
+    .solid-line {
+      display: inline-block;
+      width: 28px;
+      height: 0;
+      border-top: 2px solid #333;
+      vertical-align: middle;
+      margin-right: 4px;
+    }
+
+    .thick-line {
+      display: inline-block;
+      width: 28px;
+      height: 0;
+      border-top: 4px solid #333;
+      vertical-align: middle;
+      margin-right: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Task Manager · Component Architecture</h1>
+    <p>Generated 2026-06-12 &nbsp;|&nbsp; React + TypeScript &nbsp;|&nbsp; src/</p>
+  </header>
+
+  <!-- ═══════════════════════════════════════════
+       Diagram 1 · Component Render Tree
+  ════════════════════════════════════════════ -->
+  <section>
+    <h2>1. Component Render Tree</h2>
+    <div class="legend">
+      <strong>Legend:</strong>
+      <span><span class="thick-line"></span>provider wraps root</span>
+      <span><span class="solid-line"></span>renders child</span>
+      <span style="display:inline-flex;align-items:center;gap:4px">
+        <span style="display:inline-block;width:14px;height:14px;background:#4a90d9;border-radius:3px"></span> Provider
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:4px">
+        <span style="display:inline-block;width:14px;height:14px;background:#8e44ad;border-radius:3px"></span> Modal
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:4px">
+        <span style="display:inline-block;width:14px;height:14px;background:#27ae60;border-radius:3px"></span> Board
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:4px">
+        <span style="display:inline-block;width:14px;height:14px;background:#7f8c8d;border-radius:3px"></span> Utility / Leaf
+      </span>
+    </div>
+    <div class="diagram-wrap full-width">
+      <pre class="mermaid">
+flowchart TD
+    subgraph PROV["Context Providers — main.tsx"]
+        direction LR
+        TFCP["TaskFilterProvider"] --> TMP["TaskManagerProvider"] --> TFRP["TaskFormProvider"]
+    end
+
+    TFRP ==> TM["TaskManager"]
+
+    TM --> LD["Loader"]
+    TM --> EA["ErrorAlert"]
+    TM --> TMOD["TaskModal"]
+    TM --> FMOD["FilterModal"]
+    TM --> SMOD["SortModal"]
+    TM --> TMH["TaskManagerHeader"]
+    TM --> CB["ControlBar"]
+    TM --> TB["TaskBoard"]
+    TM --> SB["StatsBar"]
+
+    TMH --> CFL["CollapsibleFeaturesList"]
+    TMH --> DCP_H["DeleteConfirmPopover"]
+
+    CB --> FT["FilterTags"]
+
+    TB --> TCOL1["TaskColumn — todo"]
+    TB --> TCOL2["TaskColumn — in-progress"]
+    TB --> TCOL3["TaskColumn — done"]
+
+    TCOL1 --> TC1["TaskCards"]
+    TCOL2 --> TC2["TaskCards"]
+    TCOL3 --> TC3["TaskCards"]
+
+    TC1 --> DCP1["DeleteConfirmPopover"]
+    TC2 --> DCP2["DeleteConfirmPopover"]
+    TC3 --> DCP3["DeleteConfirmPopover"]
+
+    classDef provider fill:#4a90d9,color:#fff,stroke:#2c6fad
+    classDef modal fill:#8e44ad,color:#fff,stroke:#6c3483
+    classDef util fill:#7f8c8d,color:#fff,stroke:#566573
+    classDef board fill:#27ae60,color:#fff,stroke:#1e8449
+
+    class TFCP,TMP,TFRP provider
+    class TMOD,FMOD,SMOD modal
+    class LD,EA,SB,CFL,FT,DCP_H,DCP1,DCP2,DCP3 util
+    class TB,TCOL1,TCOL2,TCOL3,TC1,TC2,TC3 board
+      </pre>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       Diagram 2 · Context Consumption Map
+  ════════════════════════════════════════════ -->
+  <section>
+    <h2>2. Context Consumption Map</h2>
+    <div class="legend">
+      <strong>Legend:</strong>
+      <span><span class="dash-line"></span>consumes context</span>
+    </div>
+    <div class="diagram-wrap">
+      <pre class="mermaid">
+flowchart LR
+    subgraph CTX["Contexts"]
+        direction TB
+        TMC["TaskManagerContext"]
+        TMFC["TaskManagerFilterContext"]
+        TFC["TaskFormContext"]
+    end
+
+    subgraph COMP["Components"]
+        direction TB
+        TM2["TaskManager"]
+        TMH2["TaskManagerHeader"]
+        CB2["ControlBar"]
+        TB2["TaskBoard"]
+        TC2["TaskCard"]
+        TMOD2["TaskModal"]
+        FMOD2["FilterModal"]
+        SMOD2["SortModal"]
+        EA2["ErrorAlert"]
+        SB2["StatsBar"]
+        FT2["FilterTags"]
+    end
+
+    TMC -.-> TM2
+    TMC -.-> TMH2
+    TMC -.-> CB2
+    TMC -.-> TB2
+    TMC -.-> TC2
+    TMC -.-> TMOD2
+    TMC -.-> FMOD2
+    TMC -.-> SMOD2
+    TMC -.-> EA2
+    TMC -.-> SB2
+
+    TMFC -.-> CB2
+    TMFC -.-> FMOD2
+    TMFC -.-> FT2
+
+    TFC -.-> TC2
+    TFC -.-> TMOD2
+      </pre>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       Summary Tables
+  ════════════════════════════════════════════ -->
+  <section>
+    <h2>3. Summary Tables</h2>
+
+    <h3>Components</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Component</th>
+          <th>Consumes Contexts</th>
+          <th>Custom Hooks</th>
+          <th>API Calls</th>
+          <th>Renders Children</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>TaskManager</code></td>
+          <td><span class="badge ctx">TaskManagerContext</span></td>
+          <td>—</td>
+          <td>—</td>
+          <td>All top-level components</td>
+        </tr>
+        <tr>
+          <td><code>TaskManagerHeader</code></td>
+          <td><span class="badge ctx">TaskManagerContext</span></td>
+          <td>—</td>
+          <td><code>seedApi.resetDemo()</code></td>
+          <td><code>CollapsibleFeaturesList</code>, <code>DeleteConfirmPopover</code></td>
+        </tr>
+        <tr>
+          <td><code>CollapsibleFeaturesList</code></td>
+          <td>—</td>
+          <td>—</td>
+          <td>—</td>
+          <td>— <em style="color:#6c757d;font-size:0.8em">(leaf)</em></td>
+        </tr>
+        <tr>
+          <td><code>ControlBar</code></td>
+          <td><span class="badge ctx">TaskManagerContext</span> <span class="badge ctx">TaskManagerFilterContext</span></td>
+          <td><span class="badge hook">useDebounce</span></td>
+          <td>—</td>
+          <td><code>FilterTags</code></td>
+        </tr>
+        <tr>
+          <td><code>FilterTags</code></td>
+          <td><span class="badge ctx">TaskManagerFilterContext</span></td>
+          <td>—</td>
+          <td>—</td>
+          <td>— <em style="color:#6c757d;font-size:0.8em">(leaf)</em></td>
+        </tr>
+        <tr>
+          <td><code>TaskBoard</code></td>
+          <td><span class="badge ctx">TaskManagerContext</span></td>
+          <td>—</td>
+          <td>—</td>
+          <td><code>TaskColumn</code> ×3</td>
+        </tr>
+        <tr>
+          <td><code>TaskColumn</code></td>
+          <td>—</td>
+          <td><span class="badge hook">useDragAndDrop</span></td>
+          <td>—</td>
+          <td><code>TaskCard</code> ×n</td>
+        </tr>
+        <tr>
+          <td><code>TaskCard</code></td>
+          <td><span class="badge ctx">TaskManagerContext</span> <span class="badge ctx">TaskFormContext</span></td>
+          <td><span class="badge hook">useDragAndDrop</span> <span class="badge hook">useEscapeKey</span></td>
+          <td><code>taskApi.delete</code> <code>taskApi.update</code> <code>appStateApi.addBookmark</code> <code>appStateApi.removeBookmark</code></td>
+          <td><code>DeleteConfirmPopover</code></td>
+        </tr>
+        <tr>
+          <td><code>TaskModal</code></td>
+          <td><span class="badge ctx">TaskManagerContext</span> <span class="badge ctx">TaskFormContext</span></td>
+          <td><span class="badge hook">useEscapeKey</span></td>
+          <td><code>taskApi.create</code> <code>taskApi.update</code></td>
+          <td>— <em style="color:#6c757d;font-size:0.8em">(leaf)</em></td>
+        </tr>
+        <tr>
+          <td><code>FilterModal</code></td>
+          <td><span class="badge ctx">TaskManagerContext</span> <span class="badge ctx">TaskManagerFilterContext</span></td>
+          <td><span class="badge hook">useEscapeKey</span></td>
+          <td>—</td>
+          <td>— <em style="color:#6c757d;font-size:0.8em">(leaf)</em></td>
+        </tr>
+        <tr>
+          <td><code>SortModal</code></td>
+          <td><span class="badge ctx">TaskManagerContext</span></td>
+          <td><span class="badge hook">useEscapeKey</span></td>
+          <td><code>appStateApi.get</code> <code>appStateApi.updateSortConfig</code></td>
+          <td>— <em style="color:#6c757d;font-size:0.8em">(leaf)</em></td>
+        </tr>
+        <tr>
+          <td><code>DeleteConfirmPopover</code></td>
+          <td>—</td>
+          <td><span class="badge hook">useEscapeKey</span></td>
+          <td>—</td>
+          <td>— <em style="color:#6c757d;font-size:0.8em">(leaf, portal)</em></td>
+        </tr>
+        <tr>
+          <td><code>Loader</code></td>
+          <td>—</td>
+          <td>—</td>
+          <td>—</td>
+          <td>— <em style="color:#6c757d;font-size:0.8em">(leaf)</em></td>
+        </tr>
+        <tr>
+          <td><code>ErrorAlert</code></td>
+          <td><span class="badge ctx">TaskManagerContext</span></td>
+          <td>—</td>
+          <td>—</td>
+          <td>— <em style="color:#6c757d;font-size:0.8em">(leaf)</em></td>
+        </tr>
+        <tr>
+          <td><code>StatsBar</code></td>
+          <td><span class="badge ctx">TaskManagerContext</span></td>
+          <td>—</td>
+          <td>—</td>
+          <td>— <em style="color:#6c757d;font-size:0.8em">(leaf)</em></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Contexts</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Context</th>
+          <th>Key State Provided</th>
+          <th>Internal Hooks</th>
+          <th>API Calls on Mount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>TaskManagerContext</code></td>
+          <td><code>tasks</code>, <code>users</code>, <code>groupedTasks</code>, <code>loading</code>, <code>error</code>, <code>modalMode</code>, <code>dragState</code>, <code>appState</code>, <code>searchQuery</code>, <code>customTaskSequences</code></td>
+          <td>
+            <span class="badge hook">useLocalStorage</span>
+            <span class="badge hook">useTaskFiltering</span>
+            <span class="badge hook">useTaskSorting</span>
+            <span class="badge hook">useBookmarkSanitizer</span>
+          </td>
+          <td><code>taskApi.getAll</code>, <code>userApi.getAll</code>, <code>appStateApi.get</code></td>
+        </tr>
+        <tr>
+          <td><code>TaskManagerFilterContext</code></td>
+          <td><code>filterState</code> (searchBy, assigneeIds, priorities, showBookmarkedOnly, dueDateRange), <code>appliedFilters</code>, filter action functions</td>
+          <td>useReducer, useCallback <em style="color:#6c757d;font-size:0.85em">(built-in)</em></td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><code>TaskFormContext</code></td>
+          <td><code>taskFormData</code>, <code>formValidationStatus</code>, <code>titleRef</code>, <code>descriptionRef</code>, <code>dueDateRef</code></td>
+          <td>useRef, useCallback <em style="color:#6c757d;font-size:0.85em">(built-in)</em></td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Custom Hooks</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Hook</th>
+          <th>Consumed By</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>useDragAndDrop</code></td>
+          <td><code>TaskColumn</code>, <code>TaskCard</code></td>
+          <td>Manages drag events for cross-column drops and vertical reordering; calls <code>taskApi.updateStatus()</code> and reads/writes custom sequences via <code>TaskManagerContext</code></td>
+        </tr>
+        <tr>
+          <td><code>useDebounce</code></td>
+          <td><code>ControlBar</code></td>
+          <td>Debounces the search input value with a 300 ms delay</td>
+        </tr>
+        <tr>
+          <td><code>useEscapeKey</code></td>
+          <td><code>TaskModal</code>, <code>FilterModal</code>, <code>SortModal</code>, <code>TaskCard</code>, <code>DeleteConfirmPopover</code></td>
+          <td>Registers a keydown listener that fires a callback when Escape is pressed; used to close modals and popovers</td>
+        </tr>
+        <tr>
+          <td><code>useLocalStorage</code></td>
+          <td><code>TaskManagerContext</code></td>
+          <td>Persists custom task sequences to <code>localStorage</code> so column ordering survives page reloads</td>
+        </tr>
+        <tr>
+          <td><code>useTaskFiltering</code></td>
+          <td><code>TaskManagerContext</code></td>
+          <td>Applies the active filter criteria (priorities, assignees, bookmarks, due date, search query) to the full task list</td>
+        </tr>
+        <tr>
+          <td><code>useTaskSorting</code></td>
+          <td><code>TaskManagerContext</code></td>
+          <td>Groups tasks by status and applies per-column sort configurations (field + direction + custom sequence)</td>
+        </tr>
+        <tr>
+          <td><code>useBookmarkSanitizer</code></td>
+          <td><code>TaskManagerContext</code></td>
+          <td>Detects and removes stale bookmark IDs after tasks are deleted; calls <code>appStateApi.removeBookmark()</code> and <code>appStateApi.get()</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>API Modules</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Module</th>
+          <th>Endpoints</th>
+          <th>Consumers</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>taskApi</code></td>
+          <td><code>getAll</code>, <code>getById</code>, <code>create</code>, <code>update</code>, <code>updateStatus</code>, <code>delete</code></td>
+          <td><code>TaskManagerContext</code>, <code>TaskCard</code>, <code>TaskModal</code>, <code>useDragAndDrop</code></td>
+        </tr>
+        <tr>
+          <td><code>userApi</code></td>
+          <td><code>getAll</code>, <code>getById</code></td>
+          <td><code>TaskManagerContext</code></td>
+        </tr>
+        <tr>
+          <td><code>appStateApi</code></td>
+          <td><code>get</code>, <code>updateSortConfig</code>, <code>addBookmark</code>, <code>removeBookmark</code></td>
+          <td><code>TaskManagerContext</code>, <code>TaskCard</code>, <code>SortModal</code>, <code>useBookmarkSanitizer</code></td>
+        </tr>
+        <tr>
+          <td><code>seedApi</code></td>
+          <td><code>resetDemo</code></td>
+          <td><code>TaskManagerHeader</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+  </section>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      flowchart: { htmlLabels: true, curve: 'basis' }
+    });
+  </script>
+</body>
+</html>
